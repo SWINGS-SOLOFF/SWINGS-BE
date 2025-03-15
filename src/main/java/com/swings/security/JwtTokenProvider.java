@@ -65,34 +65,19 @@ public class JwtTokenProvider {
         return false;
     }
 
-    // 🔹 JWT에서 유저 정보(Username) 가져오기
-    public String extractUsername(String token) {
-        try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(signingKey)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
-        } catch (JwtException e) {
-            logger.warn("⚠️ JWT에서 사용자 ID 추출 실패: {}", e.getMessage());
-            return null;
-        }
+    private Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(signingKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
-    // 🔹 JWT에서 역할(Role) 정보 가져오기 (단일 값)
-    public String extractRole(String token) {
-        try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(signingKey)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+    public String extractUsername(String token) {
+        return extractAllClaims(token).getSubject();
+    }
 
-            return (String) claims.get("role");  // 🔹 단일 값으로 저장했으므로 String으로 반환
-        } catch (JwtException e) {
-            logger.warn("⚠️ JWT에서 역할 정보 추출 실패: {}", e.getMessage());
-            return null;
-        }
+    public String extractRole(String token) {
+        return (String) extractAllClaims(token).get("role");
     }
 }
