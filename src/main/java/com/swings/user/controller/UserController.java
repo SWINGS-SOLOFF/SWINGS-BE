@@ -4,6 +4,7 @@ import com.swings.user.entity.UserEntity;
 import com.swings.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     //회원가입
     @GetMapping("/signup")
     public String signupForm(Model model) {
@@ -24,8 +28,8 @@ public class UserController {
 
     //회원가입 처리
     @PostMapping("/signup")
-    public String signUser(@ModelAttribute UserEntity Id) {
-        userService.registerUser(Id);
+    public String signUser(@ModelAttribute UserEntity user) {
+        userService.registerUser(user);
         return "redirect:/user/login";
     }
 
@@ -37,10 +41,10 @@ public class UserController {
 
     //로그인 처리
     @PostMapping("/login")
-    public String loginUser(@RequestParam String Id, @RequestParam String password) {
-        UserEntity user = userService.findById(Id);
-        if (user != null && user.getPassword().equals(password)) {
-            return "redirect:/user/profile/" + Id;
+    public String loginUser(@RequestParam String id, @RequestParam String password) {
+        UserEntity user = userService.findById(id);
+        if (user != null && passwordEncoder.matches(password, user.getPassword())) {
+            return "redirect:/user/profile/" + id;
         }
         return "redirect:/user/login?error";
     }
@@ -53,32 +57,32 @@ public class UserController {
     }
 
     //회원정보 수정 화면
-    @GetMapping("/edit/{Id}")
-    public String editUserForm(@PathVariable String Id, Model model) {
-        UserEntity userId = userService.findById(Id);
+    @GetMapping("/edit/{id}")
+    public String editUserForm(@PathVariable String id, Model model) {
+        UserEntity userId = userService.findById(id);
         model.addAttribute("user", userId);
         return "edit";
     }
 
     //회원정보 수정 처리
-    @PostMapping("/edit/{username}")
-    public String editUser(@PathVariable String Id, @ModelAttribute UserEntity user) {
-        user.setId(Id);
+    @PostMapping("/edit/{id}")
+    public String editUser(@PathVariable String id, @ModelAttribute UserEntity user) {
+        user.setId(id);
         userService.updateUser(user);
-        return "redirect:/user/profile/" + Id;
+        return "redirect:/user/profile/" + id;
     }
 
     //회원정보 삭제
-    @GetMapping("/delete/{Id}")
-    public String deleteUser(@PathVariable String Id) {
-        userService.deleteUser(Id);
+    @GetMapping("/delete/{id}")
+    public String deleteUser(@PathVariable String id) {
+        userService.deleteUser(id);
         return "redirect:/user/list/";
     }
 
     //사용자 프로필
-    @GetMapping("/profile/{Id}")
-    public String viewUser(@PathVariable String Id, Model model) {
-        UserEntity user = userService.findById(Id);
+    @GetMapping("/profile/{id}")
+    public String viewUser(@PathVariable String id, Model model) {
+        UserEntity user = userService.findById(id);
         model.addAttribute("user", user);
         return "profile";
     }

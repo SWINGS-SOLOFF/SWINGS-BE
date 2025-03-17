@@ -34,7 +34,7 @@ public class UserEntity {
     private String phoneNumber;
 
     @Column(nullable = false)
-    private int job;
+    private String job;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
