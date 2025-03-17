@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@RestController //Controller+ResponseBody
 @RequestMapping("/auth")
-@RequiredArgsConstructor
+@RequiredArgsConstructor //final이 붙은 필드를 자동으로 생성자 주입
 public class AuthController {
 
     private final AuthService authService;

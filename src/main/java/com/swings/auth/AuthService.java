@@ -16,14 +16,10 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
 
     public String login(String username, String password) {
-        // 🔹 먼저 유저 조회 (아이디가 틀리면 즉시 예외 발생)
+        // 🔹 유저 조회 & 비밀번호 검증 (보안 강화)
         UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
-
-        // 🔹 비밀번호 검증 (틀리면 예외 발생)
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 잘못되었습니다.");
-        }
+                .filter(u -> passwordEncoder.matches(password, u.getPassword())) // 아이디 + 비밀번호 동시에 검증
+                .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 잘못되었습니다.")); // 보안 강화
 
         // 🔹 JWT 생성 후 반환
         return jwtTokenProvider.generateToken(user.getUsername(), user.getRole());
