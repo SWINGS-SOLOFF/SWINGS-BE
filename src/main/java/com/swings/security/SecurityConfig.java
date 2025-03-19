@@ -36,7 +36,10 @@ public class SecurityConfig {
 
                 .csrf(csrf -> csrf.disable()) // CSRF 비활성화
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/home", "/login","/auth/login", "/user/info", "/signup").permitAll()
+                        .requestMatchers(
+//                                "/home", "/login","/auth/login", "/user/info", "/signup"
+                        "/**"
+                        ).permitAll() //일단 다 허용
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 X, JWT 사용

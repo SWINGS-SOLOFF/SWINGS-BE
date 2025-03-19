@@ -6,7 +6,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<UserEntity, String> {
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     //username기반으로 사용자 조회
     @Query("SELECT u FROM UserEntity u WHERE u.username = :username")
