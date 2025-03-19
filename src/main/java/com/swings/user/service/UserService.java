@@ -7,8 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -42,17 +40,16 @@ public class UserService {
                 .name(dto.getName())
                 .phonenumber(dto.getPhonenumber())
                 .job(dto.getJob())
-                .golfSkill(dto.getGolfSkill())
+                .golfSkill(UserEntity.GolfSkill.fromString(dto.getGolfSkill())) // 🔹 String → Enum 변환
                 .mbti(dto.getMbti())
                 .hobbies(dto.getHobbies())
                 .religion(dto.getReligion())
-                .smoking(dto.getSmoking())
-                .drinking(dto.getDrinking())
+                .smoking(UserEntity.YesNo.fromString(dto.getSmoking())) // 🔹 String → Enum 변환
+                .drinking(UserEntity.YesNo.fromString(dto.getDrinking())) // 🔹 String → Enum 변환
                 .introduce(dto.getIntroduce())
-                .userImg(dto.getUserImg())
-                .role(dto.getRole())
-                .gender(dto.getGender())
-                .createdAt(LocalDateTime.now()) // 현재 시간 설정
+                .userImg(dto.getUserImg()) // Base64 이미지 저장 (URL 변환 불필요)
+                .role(UserEntity.Role.fromString(dto.getRole())) // 🔹 String → Enum 변환
+                .gender(UserEntity.Gender.fromString(dto.getGender())) // 🔹 String → Enum 변환
                 .build();
 
         return userRepository.save(user);

@@ -61,8 +61,8 @@ public class UserEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String introduce; // 자기소개
 
-    @Column(nullable = false, length = 255)
-    private String userImg; // 프로필 사진 URL
+    @Column(nullable = false, columnDefinition = "TEXT") // Base64 이미지 저장 가능
+    private String userImg; // 프로필 사진 (Base64)
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -71,19 +71,36 @@ public class UserEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now(); // 생성일 (자동 설정)
 
+    // 🔹 Enum 변환 메서드 추가 (프론트에서 보낸 String을 Enum으로 변환)
     public enum GolfSkill {
-        beginner, intermediate, advanced
+        beginner, intermediate, advanced;
+
+        public static GolfSkill fromString(String value) {
+            return GolfSkill.valueOf(value.toLowerCase());
+        }
     }
 
     public enum YesNo {
-        yes, no
+        yes, no;
+
+        public static YesNo fromString(String value) {
+            return YesNo.valueOf(value.toLowerCase());
+        }
     }
 
     public enum Role {
-        player, admin
+        player, admin;
+
+        public static Role fromString(String value) {
+            return Role.valueOf(value.toLowerCase());
+        }
     }
 
     public enum Gender {
-        male, female
+        male, female;
+
+        public static Gender fromString(String value) {
+            return Gender.valueOf(value.toLowerCase());
+        }
     }
 }
