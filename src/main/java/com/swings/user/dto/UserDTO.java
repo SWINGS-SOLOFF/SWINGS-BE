@@ -1,28 +1,27 @@
 package com.swings.user.dto;
 
 import com.swings.user.entity.UserEntity;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class UserDTO {
-    private Long userId;
     private String username;
+    private String password;
     private String name;
-    private String gender;
+    private String phonenumber;
+    private String job;
+    private UserEntity.GolfSkill golfSkill;
+    private String mbti;
+    private String hobbies;
+    private String religion;
+    private UserEntity.YesNo smoking;
+    private UserEntity.YesNo drinking;
+    private String introduce;
     private String userImg;
-
-    // Entity → DTO 변환
-    public static UserDTO fromEntity(UserEntity user) {
-        return UserDTO.builder()
-                .userId(user.getUserId())
-                .username(user.getUsername()) // 변경됨
-                .name(user.getName())
-                .gender(user.getGender())
-                .userImg(user.getUserImg())
-                .build();
-    }
+    private UserEntity.Role role;
+    private UserEntity.Gender gender;
 }

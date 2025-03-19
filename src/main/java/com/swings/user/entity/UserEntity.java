@@ -27,6 +27,10 @@ public class UserEntity {
     @Column(nullable = false, length = 50)
     private String name; // 이름
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Gender gender; // 성별 (ENUM)
+
     @Column(nullable = false, length = 15)
     private String phonenumber; // 전화번호
 
@@ -67,10 +71,6 @@ public class UserEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now(); // 생성일 (자동 설정)
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Gender gender;
-
     public enum GolfSkill {
         beginner, intermediate, advanced
     }
@@ -84,6 +84,6 @@ public class UserEntity {
     }
 
     public enum Gender {
-        Male, Female
+        male, female
     }
 }
