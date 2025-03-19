@@ -1,8 +1,10 @@
 package com.swings.user.controller;
 
 import com.swings.user.dto.UserDTO;
+
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
+
 import com.swings.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,5 +34,20 @@ public class UserController {
         Map<String, Boolean> response = new HashMap<>();
         response.put("exists", userService.isUsernameExists(username));
         return ResponseEntity.ok(response);
+      
     }
+    // 무작위 추천 유저 조회 API
+    @GetMapping("/{username}/recommend")
+    public ResponseEntity<UserDTO> getRandomUser(@PathVariable String username) {
+        UserDTO recommendedUser = userService.getRandomUser(username);
+        return ResponseEntity.ok(recommendedUser);
+    }
+
+    // 싫어요 후 새로운 유저 추천 API
+    @GetMapping("/{username}/next")
+    public ResponseEntity<UserDTO> getNextUser(@PathVariable String username, @RequestParam String excludedUsername) {
+        UserDTO recommendedUser = userService.getNextRandomUser(username, excludedUsername);
+        return ResponseEntity.ok(recommendedUser);
+    }
+
 }
