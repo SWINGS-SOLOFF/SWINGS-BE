@@ -16,14 +16,18 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    /**
-     * 회원가입 (비밀번호 암호화 후 저장)
-     */
+    // 아이디 중복 확인
+    public boolean isUsernameExists(String username) {
+        return userRepository.findByUsername(username).isPresent();
+    }
+
+    // 회원가입
     public UserEntity registerUser(UserDTO dto) {
-        // 아이디 중복 확인
+        // 회원가입 전에 프론트엔드에서 중복 확인 API 호출하도록 유도
         if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
+
         // 비밀번호 암호화
         String encryptedPassword = passwordEncoder.encode(dto.getPassword());
 
@@ -43,12 +47,10 @@ public class UserService {
                 .introduce(dto.getIntroduce())
                 .userImg(dto.getUserImg())
                 .role(dto.getRole())
+                .gender(dto.getGender())
                 .createdAt(LocalDateTime.now()) // 현재 시간 설정
                 .build();
 
         return userRepository.save(user);
-
-
-
     }
 }

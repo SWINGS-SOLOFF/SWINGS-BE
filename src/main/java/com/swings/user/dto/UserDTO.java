@@ -23,4 +23,5 @@ public class UserDTO {
     private String introduce;
     private String userImg;
     private UserEntity.Role role;
+    private UserEntity.Gender gender;
 }
