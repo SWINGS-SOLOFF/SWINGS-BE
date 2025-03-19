@@ -36,3 +36,21 @@ out/
 
 ### VS Code ###
 .vscode/
+# Mac 관련 파일
+.DS_Store
+.AppleDouble
+.LSOverride
+# Windows 관련 파일
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Gradle 관련 파일
+.gradle/
+
+
+
+# 로그 및 환경파일
+logs/
+*.log
+.env
