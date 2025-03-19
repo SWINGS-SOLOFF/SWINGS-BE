@@ -2,11 +2,9 @@ package com.swings.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController //Controller+ResponseBody
 @RequestMapping("/auth")
 @RequiredArgsConstructor //final이 붙은 필드를 자동으로 생성자 주입

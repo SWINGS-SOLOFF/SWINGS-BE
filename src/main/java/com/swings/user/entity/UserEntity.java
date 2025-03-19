@@ -27,6 +27,10 @@ public class UserEntity {
     @Column(nullable = false, length = 50)
     private String name; // 이름
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Gender gender; // 성별 (ENUM)
+
     @Column(nullable = false, length = 15)
     private String phonenumber; // 전화번호
 
@@ -77,5 +81,9 @@ public class UserEntity {
 
     public enum Role {
         player, admin
+    }
+
+    public enum Gender {
+        male, female
     }
 }
