@@ -6,15 +6,12 @@ import com.swings.user.repository.UserRepository;
 import com.swings.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:5173") // 프론트엔드 요청 허용
+//@CrossOrigin(origins = "http://localhost:5173") // 프론트엔드 요청 허용
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
