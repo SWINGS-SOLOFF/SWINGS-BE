@@ -16,6 +16,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
 
     public String login(String username, String password) {
+        
         // 🔹 유저 조회 & 비밀번호 검증 (보안 강화)
         UserEntity user = userRepository.findByUsername(username)
                 .filter(u -> passwordEncoder.matches(password, u.getPassword())) // 아이디 + 비밀번호 동시에 검증

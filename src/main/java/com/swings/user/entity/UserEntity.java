@@ -71,6 +71,7 @@ public class UserEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now(); // 생성일 (자동 설정)
 
+
     public enum GolfSkill {
         beginner, intermediate, advanced
     }
@@ -84,6 +85,6 @@ public class UserEntity {
     }
 
     public enum Gender {
-        male, female
+        Male, Female
     }
 }

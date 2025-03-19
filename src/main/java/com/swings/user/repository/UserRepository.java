@@ -1,5 +1,4 @@
 package com.swings.user.repository;
-
 import com.swings.user.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
