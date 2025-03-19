@@ -8,8 +8,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -19,12 +17,10 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * 🔥 아이디 중복 확인 메서드 (회원가입과 별도로 사용)
+     * 🔥 아이디 중복 확인
      */
-    public Map<String, Boolean> checkUsername(String username) {
-        Map<String, Boolean> response = new HashMap<>();
-        response.put("exists", userRepository.findByUsername(username).isPresent());
-        return response;
+    public boolean isUsernameExists(String username) {
+        return userRepository.findByUsername(username).isPresent();
     }
 
     /**

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:5173") // 프론트엔드 요청 허용
@@ -25,9 +26,11 @@ public class UserController {
         return ResponseEntity.ok("회원가입 성공! ID: " + newUser.getUserId());
     }
 
-    // 아이디 중복 확인 API
+    // 🔥 아이디 중복 확인 API
     @GetMapping("/check-username")
     public ResponseEntity<Map<String, Boolean>> checkUsername(@RequestParam String username) {
-        return ResponseEntity.ok(userService.checkUsername(username));
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("exists", userService.isUsernameExists(username));
+        return ResponseEntity.ok(response);
     }
 }
