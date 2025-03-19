@@ -7,8 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -18,13 +16,13 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
 
     public String login(String username, String password) {
-        Optional<UserEntity> optionalUser = userRepository.findByUsername(username);
 
-        if (optionalUser.isEmpty() || !passwordEncoder.matches(password, optionalUser.get().getPassword())) {
-            throw new IllegalArgumentException("잘못된 사용자 정보입니다.");
-        }
+        // 🔹 유저 조회 & 비밀번호 검증 (보안 강화)
+        UserEntity user = userRepository.findByUsername(username)
+                .filter(u -> passwordEncoder.matches(password, u.getPassword())) // 아이디 + 비밀번호 동시에 검증
+                .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 잘못되었습니다.")); // 보안 강화
 
-        UserEntity user = optionalUser.get();
-        return jwtTokenProvider.generateToken(user.getUsername(), user.getRole()); // 🔹 JWT 발급
+        // 🔹 JWT 생성 후 반환
+        return jwtTokenProvider.generateToken(user.getUsername(), user.getRole());
     }
 }
