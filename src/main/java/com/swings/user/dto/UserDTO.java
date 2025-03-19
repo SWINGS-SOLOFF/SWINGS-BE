@@ -1,14 +1,16 @@
 package com.swings.user.dto;
 
 import com.swings.user.entity.UserEntity;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import lombok.*;
+
 
 @Getter
 @Setter
 @NoArgsConstructor
+
 public class UserDTO {
+    private Long userId;
     private String username;
     private String password;
     private String name;
@@ -24,4 +26,6 @@ public class UserDTO {
     private String userImg;
     private UserEntity.Role role;
     private UserEntity.Gender gender;
+
+
 }

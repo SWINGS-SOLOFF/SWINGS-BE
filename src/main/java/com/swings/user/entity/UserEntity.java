@@ -61,6 +61,7 @@ public class UserEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String introduce; // 자기소개
 
+
     @Column(nullable = false, length = 255)
     private String userImg; // 프로필 사진 URL
 
@@ -82,6 +83,7 @@ public class UserEntity {
     public enum Role {
         player, admin
     }
+
 
     public enum Gender {
         male, female
