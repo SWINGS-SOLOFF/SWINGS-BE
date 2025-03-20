@@ -50,4 +50,26 @@ public class UserService {
 
         return userRepository.save(user);
     }
+    //회원 수정
+    public UserEntity updateUser(Long userId,UserDTO dto) {
+        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 필드 업데이트
+        user.setName(dto.getName());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setPhonenumber(dto.getPhonenumber());
+        user.setJob(dto.getJob());
+        user.setGolfSkill(UserEntity.GolfSkill.fromString(dto.getGolfSkill()));
+        user.setMbti(dto.getMbti());
+        user.setHobbies(dto.getHobbies());
+        user.setReligion(dto.getReligion());
+        user.setSmoking(UserEntity.YesNo.fromString(dto.getSmoking()));
+        user.setDrinking(UserEntity.YesNo.fromString(dto.getDrinking()));
+        user.setIntroduce(dto.getIntroduce());
+        user.setUserImg(dto.getUserImg());
+        user.setRole(UserEntity.Role.fromString(dto.getRole()));
+        user.setGender(UserEntity.Gender.fromString(dto.getGender()));
+        return userRepository.save(user);
+    }
+
 }

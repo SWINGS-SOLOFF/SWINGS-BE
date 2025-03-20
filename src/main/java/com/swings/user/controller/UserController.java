@@ -34,4 +34,11 @@ public class UserController {
         response.put("exists", userService.isUsernameExists(username));
         return ResponseEntity.ok(response);
     }
+
+    //회원정보 수정
+    @PatchMapping("/{userId}")
+    public ResponseEntity<String> updateUser(@PathVariable Long userId, @RequestBody UserDTO dto) {
+        UserEntity updatedUser = userService.updateUser(userId, dto);
+        return ResponseEntity.ok("회원 정보 수정 완료! ID:" + updatedUser.getUserId());
+    }
 }
