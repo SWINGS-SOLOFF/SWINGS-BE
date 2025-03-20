@@ -35,10 +35,22 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    //특정 ID의 사용자 정보 조회
+    @GetMapping("/{username}")
+    public ResponseEntity<UserEntity> getUserByUsername(@PathVariable String username) {
+        return ResponseEntity.ok(userService.getUserByUsername(username));
+    }
+
+    // 🔹 현재 로그인한 사용자 정보 조회 (React에서 사용)
+    @GetMapping("/me")
+    public ResponseEntity<UserEntity> getCurrentUser() {
+        return ResponseEntity.ok(userService.getCurrentUser());
+    }
+
     //회원정보 수정
-    @PatchMapping("/{userId}")
-    public ResponseEntity<String> updateUser(@PathVariable Long userId, @RequestBody UserDTO dto) {
-        UserEntity updatedUser = userService.updateUser(userId, dto);
+    @PatchMapping("/{username}")
+    public ResponseEntity<String> updateUser(@PathVariable String username, @RequestBody UserDTO dto) {
+        UserEntity updatedUser = userService.updateUser(username, dto);
         return ResponseEntity.ok("회원 정보 수정 완료! ID:" + updatedUser.getUserId());
     }
 }
