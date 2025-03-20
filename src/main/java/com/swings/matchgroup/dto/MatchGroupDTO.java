@@ -1,4 +1,4 @@
-package com.swings.matchgroup.DTO;
+package com.swings.matchgroup.dto;
 
 import lombok.*;
 

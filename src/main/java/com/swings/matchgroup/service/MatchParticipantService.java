@@ -1,6 +1,6 @@
 package com.swings.matchgroup.service;
 
-import com.swings.matchgroup.DTO.MatchParticipantDTO;
+import com.swings.matchgroup.dto.MatchParticipantDTO;
 import com.swings.matchgroup.entity.MatchGroupEntity;
 import com.swings.matchgroup.entity.MatchParticipantEntity;
 import com.swings.matchgroup.repository.MatchGroupRepository;

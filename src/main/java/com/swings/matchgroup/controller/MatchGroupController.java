@@ -1,6 +1,6 @@
 package com.swings.matchgroup.controller;
 
-import com.swings.matchgroup.DTO.MatchGroupDTO;
+import com.swings.matchgroup.dto.MatchGroupDTO;
 import com.swings.matchgroup.service.MatchGroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

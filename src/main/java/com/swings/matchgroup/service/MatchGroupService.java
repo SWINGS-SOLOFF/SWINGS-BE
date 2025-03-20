@@ -1,6 +1,6 @@
 package com.swings.matchgroup.service;
 
-import com.swings.matchgroup.DTO.MatchGroupDTO;
+import com.swings.matchgroup.dto.MatchGroupDTO;
 import com.swings.matchgroup.entity.MatchGroupEntity;
 import com.swings.matchgroup.repository.MatchGroupRepository;
 import lombok.RequiredArgsConstructor;
