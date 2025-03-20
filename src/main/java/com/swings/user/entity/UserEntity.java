@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.stream.Stream;
 
 @Entity
 @Getter
@@ -61,8 +62,9 @@ public class UserEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String introduce; // 자기소개
 
-    @Column(nullable = false, length = 255)
-    private String userImg; // 프로필 사진 URL
+    @Column(nullable = false, columnDefinition = "LONGTEXT")
+    private String userImg;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -71,23 +73,48 @@ public class UserEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now(); // 생성일 (자동 설정)
 
-    @Column(columnDefinition = "TEXT")
-    private String bio;
-
+    // 🔹 Enum 변환 메서드 추가
     public enum GolfSkill {
-        beginner, intermediate, advanced
+        beginner, intermediate, advanced;
+
+        public static GolfSkill fromString(String value) {
+            return Stream.of(GolfSkill.values())
+                    .filter(e -> e.name().equalsIgnoreCase(value))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid GolfSkill: " + value));
+        }
     }
 
     public enum YesNo {
-        yes, no
+        yes, no;
+
+        public static YesNo fromString(String value) {
+            return Stream.of(YesNo.values())
+                    .filter(e -> e.name().equalsIgnoreCase(value))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid YesNo value: " + value));
+        }
     }
 
     public enum Role {
-        player, admin
+        player, admin;
+
+        public static Role fromString(String value) {
+            return Stream.of(Role.values())
+                    .filter(e -> e.name().equalsIgnoreCase(value))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid Role: " + value));
+        }
     }
 
     public enum Gender {
-        Male, Female
-    }
+        male, female;
 
+        public static Gender fromString(String value) {
+            return Stream.of(Gender.values())
+                    .filter(e -> e.name().equalsIgnoreCase(value))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid Gender: " + value));
+        }
+    }
 }
