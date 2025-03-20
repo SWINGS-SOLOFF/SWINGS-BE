@@ -3,7 +3,9 @@ package com.swings.user.service;
 import com.swings.user.dto.UserDTO;
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class UserService {
 
+    @Autowired
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -22,6 +25,7 @@ public class UserService {
     }
 
     // 회원가입
+    @Transactional
     public UserEntity registerUser(UserDTO dto) {
         // 회원가입 전에 프론트엔드에서 중복 확인 API 호출하도록 유도
         if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
