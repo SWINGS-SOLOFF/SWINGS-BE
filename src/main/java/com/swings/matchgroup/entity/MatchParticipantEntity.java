@@ -20,11 +20,11 @@ public class MatchParticipantEntity {
     private Long matchParticipantId;
 
     @ManyToOne
-    @JoinColumn(name = "group_id", nullable = false)
+    @JoinColumn(name = "groupId", nullable = false)
     private MatchGroupEntity matchGroup;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "userId", nullable = false)
     private UserEntity user;
 
     @Enumerated(EnumType.STRING)
