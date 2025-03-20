@@ -1,25 +1,25 @@
 package com.swings.chat.controller;
 
-import com.swings.chat.entity.ChatMessageEntity;
-import com.swings.chat.service.ChatPubService;
+import com.swings.chat.dto.ChatMessageDTO;
+import com.swings.chat.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/chat")  // HTTP API만 담당
 @RequiredArgsConstructor
-@RequestMapping("/api/chat")
 public class ChatController {
 
-    // 그룹 채팅
-    private final ChatPubService chatPubService;
+    private final ChatMessageService chatMessageService;
 
-    @MessageMapping("/sendMessage")
-    @SendTo("/sub/chat/room/{roomId}")
-    public void sendMessage(@RequestBody ChatMessageEntity chatMessageEntity){
-        chatPubService.publish("chatroom", chatMessageEntity);
+    // HTTP POST 요청으로 메시지 저장
+    @PostMapping("/message")
+    public ResponseEntity<String> saveMessage(@RequestBody ChatMessageDTO message) {
+        chatMessageService.saveMessage(message.getRoomId(), message.getSender(), message.getContent());
+        return ResponseEntity.ok("Message saved successfully!");
     }
 }

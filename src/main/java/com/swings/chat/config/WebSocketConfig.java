@@ -1,4 +1,4 @@
-package com.swings.chat.redis;
+package com.swings.chat.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -11,16 +11,18 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
-    public void configureMessageBroker(MessageBrokerRegistry registry){
-        registry.enableSimpleBroker("/sub");
-        registry.setApplicationDestinationPrefixes("/pub");
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        // 메시지를 구독하는 경로 (클라이언트가 받을 곳)
+        config.enableSimpleBroker("/topic");
+
+        // 클라이언트가 메시지를 보낼 경로 (컨트롤러로 전달됨)
+        config.setApplicationDestinationPrefixes("/app");
     }
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws-chat") // 웹소켓 연결 엔드포인트
-                .setAllowedOrigins("*"); // 모든 도메인에서 접근 가능 (보안 설정 필요)
-//                .withSockJS(); // SockJS 지원 (WebSocket 미지원 환경에서도 사용 가능)
+        registry.addEndpoint("/ws-chat").setAllowedOrigins("*"); // withSockJS() 제거
     }
 
-}
 
+}
