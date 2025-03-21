@@ -91,7 +91,7 @@ public class SocialService {
     public boolean updateBio(Long userId, String bio) {
         return userRepository.findById(userId).map(user -> {
             if (bio != null && !bio.trim().isEmpty()) {
-                user.setBio(bio);
+                user.setIntroduce(bio);
                 userRepository.save(user);
                 return true;
             }
@@ -102,7 +102,7 @@ public class SocialService {
     // 특정 유저의 자기소개 조회
     public String getBio(Long userId) {
         return userRepository.findById(userId)
-                .map(user -> user.getBio() != null ? user.getBio() : "자기소개가 없습니다.")
+                .map(user -> user.getIntroduce() != null ? user.getIntroduce() : "자기소개가 없습니다.")
                 .orElse("자기소개가 없습니다.");
     }
 
