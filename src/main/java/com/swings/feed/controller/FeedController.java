@@ -109,7 +109,7 @@ public class FeedController {
         try {
             File destFile = new File(filePath);
             file.transferTo(destFile);
-            return "http://localhost:8090/swings/uploads/" + fileName;
+            return "http://localhost:8090/uploads/" + fileName;
         } catch (IOException e) {
             throw new RuntimeException("File upload failed: " + e.getMessage());
         }
