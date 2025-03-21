@@ -33,6 +33,7 @@ public class UserServiceImpl implements UserService {
                 .username(dto.getUsername())
                 .password(encryptedPassword)
                 .name(dto.getName())
+                .gender(UserEntity.Gender.fromString(dto.getGender()))
                 .phonenumber(dto.getPhonenumber())
                 .job(dto.getJob())
                 .golfSkill(UserEntity.GolfSkill.fromString(dto.getGolfSkill()))
@@ -44,7 +45,6 @@ public class UserServiceImpl implements UserService {
                 .introduce(dto.getIntroduce())
                 .userImg(dto.getUserImg())
                 .role(UserEntity.Role.fromString(dto.getRole()))
-                .gender(UserEntity.Gender.fromString(dto.getGender()))
                 .build();
 
         return userRepository.save(user);

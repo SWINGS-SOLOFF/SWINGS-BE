@@ -22,8 +22,13 @@ public class UserRecommendService {
 
         Optional<UserEntity> recommendedUser = userSelectRepository.findRandomUser(currentUser.getGender().name());
 
-
-        return recommendedUser.map(UserSelectDTO::fromEntity)
+        return recommendedUser.map(user -> new UserSelectDTO(
+                        user.getUserId(),
+                        user.getUsername(),
+                        user.getName(),
+                        user.getGender().name(),
+                        user.getUserImg()
+                ))
                 .orElseThrow(() -> new RuntimeException("추천할 사용자가 없습니다."));
     }
 
@@ -38,7 +43,13 @@ public class UserRecommendService {
         Optional<UserEntity> recommendedUser = userSelectRepository.findNextRandomUser(
                 currentUser.getGender().name(), excludedUsername);
 
-        return recommendedUser.map(UserSelectDTO::fromEntity)
+        return recommendedUser.map(user -> new UserSelectDTO(
+                        user.getUserId(),
+                        user.getUsername(),
+                        user.getName(),
+                        user.getGender().name(),
+                        user.getUserImg()
+                ))
                 .orElseThrow(() -> new RuntimeException("추천할 사용자가 없습니다."));
     }
 }

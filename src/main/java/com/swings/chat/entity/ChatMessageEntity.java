@@ -19,7 +19,7 @@ public class ChatMessageEntity {
     private Long messageId; // 메시지 ID (자동 증가)
 
     @ManyToOne
-    @JoinColumn(name = "room_id", nullable = false)
+    @JoinColumn(name = "roomId", nullable = false)
     private ChatRoomEntity chatRoom; // 해당 메시지가 속한 채팅방 (객체 참조)
 
     @Column(nullable = false, length = 50)
