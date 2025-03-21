@@ -3,7 +3,7 @@ package com.swings.user.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.stream.Stream;
 
 @Entity
@@ -62,7 +62,7 @@ public class UserEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String introduce; // 자기소개
 
-    @Column(nullable = false, columnDefinition = "LONGTEXT")
+    @Column(nullable = true, columnDefinition = "LONGTEXT")
     private String userImg;
 
 
@@ -70,8 +70,18 @@ public class UserEntity {
     @Column(nullable = false)
     private Role role; // 사용자 역할 (ENUM)
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now(); // 생성일 (자동 설정)
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
+    // ✅ `createdAt`이 NULL이면 자동 설정 (JPA에서 NULL 방지)
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = new Timestamp(System.currentTimeMillis());
+        }
+    }
+
+
 
     // 🔹 Enum 변환 메서드 추가
     public enum GolfSkill {

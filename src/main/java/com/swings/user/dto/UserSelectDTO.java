@@ -17,16 +17,4 @@ public class UserSelectDTO {
 
 
 
-
-
-    // Entity → DTO 변환
-    public static UserSelectDTO fromEntity(UserEntity user) {
-        return UserSelectDTO.builder()
-                .userId(user.getUserId())
-                .username(user.getUsername()) // 변경됨
-                .name(user.getName())
-                .gender(user.getGender().name())  // Enum → String 변환
-                .userImg(user.getUserImg())
-                .build();
-    }
 }
