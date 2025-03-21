@@ -7,7 +7,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "matchparticipant")
+@Table(name = "match_participant")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,10 +17,11 @@ public class MatchParticipantEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "match_participant_id")
     private Long matchParticipantId;
 
     @ManyToOne
-    @JoinColumn(name = "group_id", nullable = false)
+    @JoinColumn(name = "match_group_id", nullable = false)
     private MatchGroupEntity matchGroup;
 
     @ManyToOne
