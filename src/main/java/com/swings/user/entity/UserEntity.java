@@ -62,7 +62,7 @@ public class UserEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String introduce; // 자기소개
 
-    @Column(nullable = false, columnDefinition = "LONGTEXT")
+    @Column(nullable = true, columnDefinition = "LONGTEXT")
     private String userImg;
 
 
