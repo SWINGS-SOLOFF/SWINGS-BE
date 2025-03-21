@@ -34,16 +34,16 @@ public class UserServiceImpl implements UserService {
                 .password(encryptedPassword)
                 .name(dto.getName())
                 .gender(UserEntity.Gender.fromString(dto.getGender()))
-                .phonenumber(dto.getPhonenumber())
+                .phone_number(dto.getPhone_number())
                 .job(dto.getJob())
-                .golfSkill(UserEntity.GolfSkill.fromString(dto.getGolfSkill()))
+                .golf_skill(UserEntity.GolfSkill.fromString(dto.getGolf_skill()))
                 .mbti(dto.getMbti())
                 .hobbies(dto.getHobbies())
                 .religion(dto.getReligion())
                 .smoking(UserEntity.YesNo.fromString(dto.getSmoking()))
                 .drinking(UserEntity.YesNo.fromString(dto.getDrinking()))
                 .introduce(dto.getIntroduce())
-                .userImg(dto.getUserImg())
+                .user_img(dto.getUser_img())
                 .role(UserEntity.Role.fromString(dto.getRole()))
                 .build();
 
@@ -79,16 +79,16 @@ public class UserServiceImpl implements UserService {
                 user.setPassword(passwordEncoder.encode(dto.getPassword()));
             }
         }
-        if (dto.getPhonenumber() != null) user.setPhonenumber(dto.getPhonenumber());
+        if (dto.getPhone_number() != null) user.setPhone_number(dto.getPhone_number());
         if (dto.getJob() != null) user.setJob(dto.getJob());
-        if (dto.getGolfSkill() != null) user.setGolfSkill(UserEntity.GolfSkill.fromString(dto.getGolfSkill()));
+        if (dto.getGolf_skill() != null) user.setGolf_skill(UserEntity.GolfSkill.fromString(dto.getGolf_skill()));
         if (dto.getMbti() != null) user.setMbti(dto.getMbti());
         if (dto.getHobbies() != null) user.setHobbies(dto.getHobbies());
         if (dto.getReligion() != null) user.setReligion(dto.getReligion());
         if (dto.getSmoking() != null) user.setSmoking(UserEntity.YesNo.fromString(dto.getSmoking()));
         if (dto.getDrinking() != null) user.setDrinking(UserEntity.YesNo.fromString(dto.getDrinking()));
         if (dto.getIntroduce() != null) user.setIntroduce(dto.getIntroduce());
-        if (dto.getUserImg() != null) user.setUserImg(dto.getUserImg());
+        if (dto.getUser_img() != null) user.setUser_img(dto.getUser_img());
         if (dto.getRole() != null) user.setRole(UserEntity.Role.fromString(dto.getRole()));
         if (dto.getGender() != null) user.setGender(UserEntity.Gender.fromString(dto.getGender()));
 

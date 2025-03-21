@@ -24,7 +24,7 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<String> registerUser(@RequestBody UserDTO dto) {
         UserEntity newUser = userService.registerUser(dto);
-        return ResponseEntity.ok("회원가입 성공! ID: " + newUser.getUserId());
+        return ResponseEntity.ok("회원가입 성공! ID: " + newUser.getUser_id());
     }
 
     // 아이디 중복 확인
@@ -51,6 +51,6 @@ public class UserController {
     @PatchMapping("/{username}")
     public ResponseEntity<String> updateUser(@PathVariable String username, @RequestBody UserDTO dto) {
         UserEntity updatedUser = userService.updateUser(username, dto);
-        return ResponseEntity.ok("회원 정보 수정 완료! ID:" + updatedUser.getUserId());
+        return ResponseEntity.ok("회원 정보 수정 완료! ID:" + updatedUser.getUser_id());
     }
 }

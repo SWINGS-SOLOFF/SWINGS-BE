@@ -17,7 +17,7 @@ public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId; // 자동 증가하는 기본 키
+    private Long user_id; // 자동 증가하는 기본 키
 
     @Column(nullable = false, unique = true, length = 50)
     private String username; // 사용자 아이디
@@ -33,14 +33,14 @@ public class UserEntity {
     private Gender gender; // 성별 (ENUM)
 
     @Column(nullable = false, length = 15)
-    private String phonenumber; // 전화번호
+    private String phone_number; // 전화번호
 
     @Column(nullable = false, length = 50)
     private String job; // 직업
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private GolfSkill golfSkill; // 골프 실력 (ENUM)
+    private GolfSkill golf_skill; // 골프 실력 (ENUM)
 
     @Column(nullable = false, length = 10)
     private String mbti; // MBTI
@@ -63,7 +63,7 @@ public class UserEntity {
     private String introduce; // 자기소개
 
     @Column(nullable = false, columnDefinition = "LONGTEXT")
-    private String userImg;
+    private String user_img;
 
 
     @Enumerated(EnumType.STRING)
@@ -71,13 +71,13 @@ public class UserEntity {
     private Role role; // 사용자 역할 (ENUM)
 
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
+    private Timestamp created_at;
 
     // ✅ `createdAt`이 NULL이면 자동 설정 (JPA에서 NULL 방지)
     @PrePersist
     protected void onCreate() {
-        if (createdAt == null) {
-            createdAt = new Timestamp(System.currentTimeMillis());
+        if (created_at == null) {
+            created_at = new Timestamp(System.currentTimeMillis());
         }
     }
 

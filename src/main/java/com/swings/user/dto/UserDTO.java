@@ -11,10 +11,10 @@ public class UserDTO {
     private String username;
     private String password;
     private String name;
-    private String phonenumber;
+    private String phone_number;
     private String job;
 
-    private String golfSkill; // 🔹 Enum 대신 String 사용
+    private String golf_skill; // 🔹 Enum 대신 String 사용
     private String mbti;
     private String hobbies;
     private String religion;
@@ -23,7 +23,7 @@ public class UserDTO {
     private String drinking; // 🔹 Enum 대신 String 사용
     private String introduce;
 
-    private String userImg; // 🔹 Base64 이미지 저장
+    private String user_img; // 🔹 Base64 이미지 저장
 
     private String role; // 🔹 Enum 대신 String 사용
     private String gender; // 🔹 Enum 대신 String 사용
