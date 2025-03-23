@@ -41,7 +41,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserByUsername(username));
     }
 
-    // 🔹 현재 로그인한 사용자 정보 조회 (React에서 사용)
+    //현재 로그인한 사용자 정보 조회 (React에서 사용)
     @GetMapping("/me")
     public ResponseEntity<UserEntity> getCurrentUser() {
         return ResponseEntity.ok(userService.getCurrentUser());
