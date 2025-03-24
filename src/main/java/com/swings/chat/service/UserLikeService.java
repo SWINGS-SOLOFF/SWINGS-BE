@@ -1,6 +1,6 @@
-package com.swings.user.service;
-import com.swings.user.entity.UserLikeEntity;
-import com.swings.user.repository.UserLikeRepository;
+package com.swings.chat.service;
+import com.swings.chat.entity.UserLikeEntity;
+import com.swings.chat.repository.UserLikeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

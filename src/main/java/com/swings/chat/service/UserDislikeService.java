@@ -1,7 +1,7 @@
-package com.swings.user.service;
+package com.swings.chat.service;
 
-import com.swings.user.entity.UserDislikeEntity;
-import com.swings.user.repository.UserDislikeRepository;
+import com.swings.chat.entity.UserDislikeEntity;
+import com.swings.chat.repository.UserDislikeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
