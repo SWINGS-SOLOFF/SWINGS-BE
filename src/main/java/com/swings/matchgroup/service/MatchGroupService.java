@@ -1,31 +1,15 @@
 package com.swings.matchgroup.service;
 
-import com.swings.matchgroup.entity.MatchGroupEntity;
-import com.swings.matchgroup.repository.MatchGroupRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
+import com.swings.matchgroup.dto.MatchGroupDTO;
 import java.util.List;
-import java.util.Optional;
 
-@Service
-@RequiredArgsConstructor
-public class MatchGroupService {
+public interface MatchGroupService {
 
-    private final MatchGroupRepository matchGroupRepository;
+    // 그룹 생성
+    MatchGroupDTO createMatchGroup(MatchGroupDTO matchGroupDTO);
+    // 공개된 모든 그룹 보기
+    List<MatchGroupDTO> getAllPublicMatchGroups();
+    // 그룹 찾기 By Id
+    MatchGroupDTO getMatchGroupById(Long groupId);
 
-    // 방 생성
-    public MatchGroupEntity createMatchGroup(MatchGroupEntity matchGroup) {
-        return matchGroupRepository.save(matchGroup);
-    }
-
-    // 공개된 방 모두 조회
-    public List<MatchGroupEntity> getAllPublicMatchGroups() {
-        return matchGroupRepository.findByIsPublicTrue();
-    }
-
-    // 특정 방 조회
-    public Optional<MatchGroupEntity> getMatchGroupById(Long groupId) {
-        return matchGroupRepository.findById(groupId);
-    }
 }
