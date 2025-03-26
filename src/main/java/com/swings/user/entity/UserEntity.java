@@ -65,13 +65,17 @@ public class UserEntity {
     @Column(nullable = true, columnDefinition = "LONGTEXT")
     private String userImg;
 
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role; // 사용자 역할 (ENUM)
 
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ActivityRegion activityRegion; // 활동 지역 (도/광역시 단위 ENUM)
+
 
     // ✅ `createdAt`이 NULL이면 자동 설정 (JPA에서 NULL 방지)
     @PrePersist
@@ -127,4 +131,20 @@ public class UserEntity {
                     .orElseThrow(() -> new IllegalArgumentException("Invalid Gender: " + value));
         }
     }
+
+    public enum ActivityRegion {
+        SEOUL, BUSAN, DAEGU, INCHEON, GWANGJU,
+        DAEJEON, ULSAN, SEJONG,
+        GYEONGGI, GANGWON, CHUNGBUK, CHUNGNAM,
+        JEONBUK, JEONNAM, GYEONGBUK, GYEONGNAM,
+        JEJU;
+
+        public static ActivityRegion fromString(String value) {
+            return Stream.of(ActivityRegion.values())
+                    .filter(e -> e.name().equalsIgnoreCase(value))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid ActivityRegion: " + value));
+        }
+    }
+
 }

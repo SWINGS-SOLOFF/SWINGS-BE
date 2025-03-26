@@ -27,4 +27,5 @@ public class UserDTO {
 
     private String role; // 🔹 Enum 대신 String 사용
     private String gender; // 🔹 Enum 대신 String 사용
+    private String activityRegion;
 }
