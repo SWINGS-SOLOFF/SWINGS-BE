@@ -1,5 +1,7 @@
 package com.swings.social.service;
 
+import com.swings.feed.dto.FeedDTO;
+import com.swings.feed.entity.FeedEntity;
 import com.swings.feed.repository.FeedRepository;
 import com.swings.social.entity.SocialEntity;
 import com.swings.social.repository.SocialRepository;
@@ -20,8 +22,7 @@ public class SocialService {
     private final SocialRepository socialRepository;
     private final FeedRepository feedRepository;
 
-
-    // 기존 팔로우 기능
+    // 팔로우 기능
     public boolean followUser(Long followerId, Long followeeId) {
         Optional<UserEntity> follower = userRepository.findById(followerId);
         Optional<UserEntity> followee = userRepository.findById(followeeId);
@@ -39,7 +40,7 @@ public class SocialService {
         return false;
     }
 
-    // 기존 언팔로우 기능
+    // 언팔로우 기능
     public boolean unfollowUser(Long followerId, Long followeeId) {
         Optional<UserEntity> follower = userRepository.findById(followerId);
         Optional<UserEntity> followee = userRepository.findById(followeeId);
@@ -55,22 +56,20 @@ public class SocialService {
         return false;
     }
 
-    // 특정 유저의 팔로워 목록 조회 (해당 유저를 팔로우하는 사용자들)
+    // 특정 유저의 팔로워 목록 조회
     public List<UserEntity> getFollowers(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-        // followee가 user인 모든 SocialEntity에서 follower 리스트 반환
         return socialRepository.findByFollowee(user)
                 .stream()
                 .map(SocialEntity::getFollower)
                 .collect(Collectors.toList());
     }
 
-    // 특정 유저의 팔로잉 목록 조회 (해당 유저가 팔로우하는 사용자들)
+    // 특정 유저의 팔로잉 목록 조회
     public List<UserEntity> getFollowings(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-        // follower가 user인 모든 SocialEntity에서 followee 리스트 반환
         return socialRepository.findByFollower(user)
                 .stream()
                 .map(SocialEntity::getFollowee)
@@ -88,10 +87,10 @@ public class SocialService {
     }
 
     // 자기소개 업데이트
-    public boolean updateBio(Long userId, String bio) {
+    public boolean updateIntroduce(Long userId, String introduce) {
         return userRepository.findById(userId).map(user -> {
-            if (bio != null && !bio.trim().isEmpty()) {
-                user.setIntroduce(bio);
+            if (introduce != null && !introduce.trim().isEmpty()) {
+                user.setIntroduce(introduce);
                 userRepository.save(user);
                 return true;
             }
@@ -100,13 +99,13 @@ public class SocialService {
     }
 
     // 특정 유저의 자기소개 조회
-    public String getBio(Long userId) {
+    public String getIntroduce(Long userId) {
         return userRepository.findById(userId)
                 .map(user -> user.getIntroduce() != null ? user.getIntroduce() : "자기소개가 없습니다.")
                 .orElse("자기소개가 없습니다.");
     }
 
-    // 특정 사용자의 피드 개수를 조회
+    // 특정 사용자의 피드 개수 조회
     public int getUserFeedCount(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new RuntimeException("User not found with id: " + userId);
@@ -114,5 +113,11 @@ public class SocialService {
         return feedRepository.countByUser_UserId(userId);
     }
 
-
+    // 사용자의 피드 조회
+    public List<FeedDTO> getFeedsByUserId(Long userId) {
+        List<FeedEntity> feeds = feedRepository.findByUser_UserId(userId);
+        return feeds.stream()
+                .map(feed -> new FeedDTO(feed))
+                .collect(Collectors.toList());
+    }
 }

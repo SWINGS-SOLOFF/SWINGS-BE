@@ -7,6 +7,7 @@ import com.swings.feed.service.CommentService;
 import com.swings.feed.service.FeedService;
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -107,21 +108,15 @@ public class FeedController {
         String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
         String filePath = uploadDir + fileName;
         try {
+            // 리사이즈 처리 (최대 너비 800px, 최대 높이 600px)
             File destFile = new File(filePath);
-            file.transferTo(destFile);
-            return "http://localhost:8090/uploads/" + fileName;
+            Thumbnails.of(file.getInputStream())
+                    .size(800, 600)  // 크기 지정
+                    .toFile(destFile);
+            return "http://localhost:8090/swings/uploads/" + fileName;
         } catch (IOException e) {
             throw new RuntimeException("File upload failed: " + e.getMessage());
         }
-    }
-
-    // 저장된 파일 제공 (Static Resource 처리)
-    @CrossOrigin(origins = "http://localhost:5173")
-    @GetMapping("/uploads/{fileName}")
-    public ResponseEntity<byte[]> getFile(@PathVariable String fileName) throws IOException {
-        Path path = Paths.get("C:/uploads/" + fileName);
-        byte[] data = Files.readAllBytes(path);
-        return ResponseEntity.ok().body(data);
     }
 
     // 좋아요 증가
@@ -188,4 +183,10 @@ public class FeedController {
                 .createdAt(commentEntity.getCreatedAt())
                 .build();
     }
+
+    // 특정 사용자 정보 조회 (ID 기반)
+    public UserEntity getUserById(Long userId) {
+        return userRepository.findById(userId).orElse(null);
+    }
+
 }

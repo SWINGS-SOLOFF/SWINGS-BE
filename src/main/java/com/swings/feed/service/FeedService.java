@@ -104,6 +104,7 @@ public class FeedService {
         return FeedDTO.builder()
                 .feedId(feedEntity.getFeedId())
                 .userId(feedEntity.getUser().getUserId())
+                .username(feedEntity.getUser().getUsername())
                 .imageUrl(feedEntity.getImageUrl())
                 .caption(feedEntity.getCaption())
                 .createdAt(feedEntity.getCreatedAt())
