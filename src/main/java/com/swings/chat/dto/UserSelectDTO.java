@@ -1,6 +1,5 @@
-package com.swings.user.dto;
+package com.swings.chat.dto;
 
-import com.swings.user.entity.UserEntity;
 import lombok.*;
 
 @Getter

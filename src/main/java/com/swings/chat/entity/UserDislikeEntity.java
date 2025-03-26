@@ -1,4 +1,4 @@
-package com.swings.user.entity;
+package com.swings.chat.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

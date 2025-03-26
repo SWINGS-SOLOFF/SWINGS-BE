@@ -1,7 +1,7 @@
-package com.swings.user.controller;
+package com.swings.chat.controller;
 
 
-import com.swings.user.service.UserDislikeService;
+import com.swings.chat.service.UserDislikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;

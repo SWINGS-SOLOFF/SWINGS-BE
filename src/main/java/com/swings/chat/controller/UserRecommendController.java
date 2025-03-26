@@ -1,7 +1,7 @@
-package com.swings.user.controller;
+package com.swings.chat.controller;
 
-import com.swings.user.dto.UserSelectDTO;
-import com.swings.user.service.UserRecommendService;
+import com.swings.chat.dto.UserSelectDTO;
+import com.swings.chat.service.UserRecommendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
