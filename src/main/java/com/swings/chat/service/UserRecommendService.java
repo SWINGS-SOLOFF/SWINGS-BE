@@ -20,7 +20,7 @@ public class UserRecommendService {
         UserEntity currentUser = userSelectRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        Optional<UserEntity> recommendedUser = userSelectRepository.findRandomUser(currentUser.getGender().name());
+        Optional<UserEntity> recommendedUser = userSelectRepository.findRandomUser(currentUser.getGender());
 
         return recommendedUser.map(user -> new UserSelectDTO(
                         user.getUserId(),
@@ -41,7 +41,7 @@ public class UserRecommendService {
 
         // 특정 유저(excludedUsername)를 제외하고 무작위 추천 유저 조회
         Optional<UserEntity> recommendedUser = userSelectRepository.findNextRandomUser(
-                currentUser.getGender().name(), excludedUsername);
+                currentUser.getGender(), excludedUsername);
 
         return recommendedUser.map(user -> new UserSelectDTO(
                         user.getUserId(),
