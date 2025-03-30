@@ -53,4 +53,14 @@ public class UserController {
         UserEntity updatedUser = userService.updateUser(username, dto);
         return ResponseEntity.ok("회원 정보 수정 완료! ID:" + updatedUser.getUserId());
     }
+
+    //회원 탈퇴
+    // 비밀번호 확인 후 탈퇴
+    @PostMapping("/delete/me")
+    public ResponseEntity<String> deleteWithPassword(@RequestBody UserDTO dto) {
+        userService.deleteCurrentUserWithPassword(dto.getPassword());
+        return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
+    }
+
+
 }
