@@ -16,14 +16,20 @@ public class UserLikeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long likeId; // 좋아요 ID (자동 증가)
+    private Long likeId;
 
     @Column(nullable = false, length = 50)
-    private String fromUserId; // 좋아요를 누른 사용자 ID
+    private String fromUserId;
 
     @Column(nullable = false, length = 50)
-    private String toUserId; // 좋아요를 받은 사용자 ID
+    private String toUserId;
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now(); // 좋아요 누른 시간 (자동 설정)
+    private LocalDateTime createdAt;
+
+    // ✅ 저장 전에 자동으로 현재 시간 세팅
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

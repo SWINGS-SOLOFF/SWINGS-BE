@@ -14,8 +14,10 @@ public class UserLikeService {
     // 좋아요 저장
     @Transactional
     public void likeUser(String fromUserId, String toUserId) {
-        // fromUserId가 이미 좋아요를 눌렀는지 확인
-        if (userLikeRepository.findByFromUserId(fromUserId).isEmpty()) {
+        // 특정 대상에게 이미 좋아요 눌렀는지 확인
+        boolean alreadyLiked = userLikeRepository.existsByFromUserIdAndToUserId(fromUserId, toUserId);
+
+        if (!alreadyLiked) {
             userLikeRepository.save(UserLikeEntity.builder()
                     .fromUserId(fromUserId)
                     .toUserId(toUserId)

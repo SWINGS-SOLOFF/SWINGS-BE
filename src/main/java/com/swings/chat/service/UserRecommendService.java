@@ -27,7 +27,8 @@ public class UserRecommendService {
                         user.getUsername(),
                         user.getName(),
                         user.getGender().name(),
-                        user.getUserImg()
+                        user.getUserImg(),
+                        user.getIntroduce()
                 ))
                 .orElseThrow(() -> new RuntimeException("추천할 사용자가 없습니다."));
     }
@@ -48,7 +49,8 @@ public class UserRecommendService {
                         user.getUsername(),
                         user.getName(),
                         user.getGender().name(),
-                        user.getUserImg()
+                        user.getUserImg(),
+                        user.getIntroduce()
                 ))
                 .orElseThrow(() -> new RuntimeException("추천할 사용자가 없습니다."));
     }
