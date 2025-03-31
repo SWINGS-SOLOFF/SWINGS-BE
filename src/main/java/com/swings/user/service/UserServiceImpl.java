@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -36,6 +37,8 @@ public class UserServiceImpl implements UserService {
                 .password(encryptedPassword)
                 .name(dto.getName())
                 .gender(UserEntity.Gender.fromString(dto.getGender()))
+                .birthDate(LocalDate.parse(dto.getBirthDate()))
+                .email(dto.getEmail()) // 이메일 추가
                 .phonenumber(dto.getPhonenumber())
                 .job(dto.getJob())
                 .golfSkill(UserEntity.GolfSkill.fromString(dto.getGolfSkill()))
@@ -93,6 +96,11 @@ public class UserServiceImpl implements UserService {
                 user.setPassword(passwordEncoder.encode(dto.getPassword()));
             }
         }
+        if (dto.getBirthDate() != null) {
+            user.setBirthDate(LocalDate.parse(dto.getBirthDate()));
+        }
+
+        if (dto.getEmail() != null) user.setEmail(dto.getEmail());
         if (dto.getPhonenumber() != null) user.setPhonenumber(dto.getPhonenumber());
         if (dto.getJob() != null) user.setJob(dto.getJob());
         if (dto.getGolfSkill() != null) user.setGolfSkill(UserEntity.GolfSkill.fromString(dto.getGolfSkill()));
