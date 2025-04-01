@@ -148,18 +148,5 @@ public class UserEntity {
         }
     }
 
-    // `equals()`와 `hashCode()` 구현 추가
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UserEntity that = (UserEntity) o;
-        return userId != null && userId.equals(that.userId);
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
 
 }
