@@ -1,6 +1,5 @@
 package com.swings.user.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,7 +13,6 @@ public class UserDTO {
     private String password;
     private String name;
 
-    @JsonProperty("birthdate")
     private String birthDate;
     private String phonenumber;
     private String email; // 이메일
