@@ -3,6 +3,7 @@ package com.swings.social.service;
 import com.swings.feed.dto.FeedDTO;
 import com.swings.feed.entity.FeedEntity;
 import com.swings.feed.repository.FeedRepository;
+import com.swings.social.dto.SocialDTO;
 import com.swings.social.entity.SocialEntity;
 import com.swings.social.repository.SocialRepository;
 import com.swings.user.dto.UserDTO;
@@ -59,39 +60,34 @@ public class SocialService {
     }
 
     // 특정 유저의 팔로워 목록 조회 → 해당 유저를 팔로우하는 사용자들
-    public List<UserDTO> getFollowers(Long userId) {
+    public List<SocialDTO> getFollowers(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
         return socialRepository.findByFollowee(user)
                 .stream()
-                .map(socialEntity -> {
-                    UserEntity follower = socialEntity.getFollower();
-                    return new UserDTO(
-                            follower.getUserId(),
-                            follower.getUsername(),
-                            follower.getUserImg() != null ? follower.getUserImg() : "default-image-url"
-                    );
-                })
+                .map(socialEntity -> new SocialDTO(
+                        socialEntity.getFollower().getUserId(),
+                        socialEntity.getFollowee().getUserId(),
+                        convertToUserDTO(socialEntity.getFollower()),
+                        convertToUserDTO(socialEntity.getFollowee())
+                ))
                 .collect(Collectors.toList());
     }
 
     // 특정 유저의 팔로잉 목록 조회 → 해당 유저가 팔로우하는 사용자들
-    public List<UserDTO> getFollowing(Long userId) {
+    public List<SocialDTO> getFollowing(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-        List<SocialEntity> followings = socialRepository.findByFollower(user);
-        if (followings == null || followings.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return followings.stream()
-                .map(socialEntity -> {
-                    UserEntity followee = socialEntity.getFollowee();
-                    return new UserDTO(
-                            followee.getUserId(),
-                            followee.getUsername(),
-                            followee.getUserImg() != null ? followee.getUserImg() : "default-image-url"
-                    );
-                })
+
+        return socialRepository.findByFollower(user)
+                .stream()
+                .map(socialEntity -> new SocialDTO(
+                        socialEntity.getFollower().getUserId(),
+                        socialEntity.getFollowee().getUserId(),
+                        convertToUserDTO(socialEntity.getFollower()),
+                        convertToUserDTO(socialEntity.getFollowee())
+                ))
                 .collect(Collectors.toList());
     }
 
@@ -139,5 +135,17 @@ public class SocialService {
                 .map(feed -> new FeedDTO(feed))
                 .collect(Collectors.toList());
     }
-
+    
+    // UserDTO 생성자로 변환
+    private UserDTO convertToUserDTO(UserEntity user) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUserId(user.getUserId());
+        userDTO.setUsername(user.getUsername());
+        userDTO.setUserImg(user.getUserImg() != null ? user.getUserImg() : "default-image-url");
+        userDTO.setIntroduce(user.getIntroduce());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setGender(user.getGender() != null ? user.getGender().toString() : null);
+        userDTO.setActivityRegion(user.getActivityRegion() != null ? user.getActivityRegion().toString() : null);
+        return userDTO;
+    }
 }
