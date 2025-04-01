@@ -3,7 +3,8 @@ package com.swings.user.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.stream.Stream;
 
 @Entity
@@ -32,8 +33,15 @@ public class UserEntity {
     @Column(nullable = false)
     private Gender gender; // 성별 (ENUM)
 
+    @Column(nullable = false)
+    private LocalDate birthDate; // 생년월일
+
     @Column(nullable = false, length = 15)
     private String phonenumber; // 전화번호
+
+    @Column(nullable = false, unique = true, length = 100)
+    private String email; // 이메일
+
 
     @Column(nullable = false, length = 50)
     private String job; // 직업
@@ -62,16 +70,30 @@ public class UserEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String introduce; // 자기소개
 
-    @Column(nullable = false, columnDefinition = "LONGTEXT")
+    @Column(nullable = true, columnDefinition = "LONGTEXT")
     private String userImg;
-
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role; // 사용자 역할 (ENUM)
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now(); // 생성일 (자동 설정)
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp createdAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ActivityRegion activityRegion; // 활동 지역 (도/광역시 단위 ENUM)
+
+
+    // ✅ `createdAt`이 NULL이면 자동 설정 (JPA에서 NULL 방지)
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = new Timestamp(System.currentTimeMillis());
+        }
+    }
+
+
 
     // 🔹 Enum 변환 메서드 추가
     public enum GolfSkill {
@@ -116,5 +138,27 @@ public class UserEntity {
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Invalid Gender: " + value));
         }
+    }
+
+    public enum ActivityRegion {
+        SEOUL, BUSAN, DAEGU, INCHEON, GWANGJU,
+        DAEJEON, ULSAN, SEJONG,
+        GYEONGGI, GANGWON, CHUNGBUK, CHUNGNAM,
+        JEONBUK, JEONNAM, GYEONGBUK, GYEONGNAM,
+        JEJU;
+
+        public static ActivityRegion fromString(String value) {
+            return Stream.of(ActivityRegion.values())
+                    .filter(e -> e.name().equalsIgnoreCase(value))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid ActivityRegion: " + value));
+        }
+    }
+
+    // 🎯 한국식 나이 계산 메서드
+    public int getKoreanAge() {
+        int currentYear = LocalDate.now().getYear();
+        int birthYear = this.birthDate.getYear();
+        return currentYear - birthYear + 1;
     }
 }

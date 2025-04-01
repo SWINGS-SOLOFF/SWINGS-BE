@@ -1,5 +1,6 @@
 package com.swings.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,7 +12,11 @@ public class UserDTO {
     private String username;
     private String password;
     private String name;
+
+    @JsonProperty("birthdate")
+    private String birthDate;
     private String phonenumber;
+    private String email; // 이메일
     private String job;
 
     private String golfSkill; // 🔹 Enum 대신 String 사용
@@ -27,4 +32,5 @@ public class UserDTO {
 
     private String role; // 🔹 Enum 대신 String 사용
     private String gender; // 🔹 Enum 대신 String 사용
+    private String activityRegion;
 }

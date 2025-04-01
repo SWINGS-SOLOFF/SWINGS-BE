@@ -1,4 +1,4 @@
-package com.swings.user.repository;
+package com.swings.chat.repository;
 
 import com.swings.user.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

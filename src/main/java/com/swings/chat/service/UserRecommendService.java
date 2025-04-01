@@ -1,8 +1,8 @@
-package com.swings.user.service;
+package com.swings.chat.service;
 
-import com.swings.user.dto.UserSelectDTO;
+import com.swings.chat.dto.UserSelectDTO;
 import com.swings.user.entity.UserEntity;
-import com.swings.user.repository.UserSelectRepository;
+import com.swings.chat.repository.UserSelectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +22,13 @@ public class UserRecommendService {
 
         Optional<UserEntity> recommendedUser = userSelectRepository.findRandomUser(currentUser.getGender().name());
 
-
-        return recommendedUser.map(UserSelectDTO::fromEntity)
+        return recommendedUser.map(user -> new UserSelectDTO(
+                        user.getUserId(),
+                        user.getUsername(),
+                        user.getName(),
+                        user.getGender().name(),
+                        user.getUserImg()
+                ))
                 .orElseThrow(() -> new RuntimeException("추천할 사용자가 없습니다."));
     }
 
@@ -38,7 +43,13 @@ public class UserRecommendService {
         Optional<UserEntity> recommendedUser = userSelectRepository.findNextRandomUser(
                 currentUser.getGender().name(), excludedUsername);
 
-        return recommendedUser.map(UserSelectDTO::fromEntity)
+        return recommendedUser.map(user -> new UserSelectDTO(
+                        user.getUserId(),
+                        user.getUsername(),
+                        user.getName(),
+                        user.getGender().name(),
+                        user.getUserImg()
+                ))
                 .orElseThrow(() -> new RuntimeException("추천할 사용자가 없습니다."));
     }
 }
