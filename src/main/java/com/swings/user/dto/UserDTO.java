@@ -1,6 +1,7 @@
 package com.swings.user.dto;
 
 import com.swings.user.entity.UserEntity;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,7 +9,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class UserDTO {
+    private Long userId;
     private String username;
     private String password;
     private String name;
@@ -28,4 +31,11 @@ public class UserDTO {
 
     private String role; // 🔹 Enum 대신 String 사용
     private String gender; // 🔹 Enum 대신 String 사용
+    private String activityRegion;
+
+    public UserDTO(Long userId, String username, String userImg) {
+        this.userId = userId;
+        this.username = username;
+        this.userImg = userImg;
+    }
 }

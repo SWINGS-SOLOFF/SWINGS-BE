@@ -73,6 +73,11 @@ public class UserEntity {
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ActivityRegion activityRegion; // 활동 지역 (도/광역시 단위 ENUM)
+
+
     // ✅ `createdAt`이 NULL이면 자동 설정 (JPA에서 NULL 방지)
     @PrePersist
     protected void onCreate() {
@@ -127,4 +132,34 @@ public class UserEntity {
                     .orElseThrow(() -> new IllegalArgumentException("Invalid Gender: " + value));
         }
     }
+
+    public enum ActivityRegion {
+        SEOUL, BUSAN, DAEGU, INCHEON, GWANGJU,
+        DAEJEON, ULSAN, SEJONG,
+        GYEONGGI, GANGWON, CHUNGBUK, CHUNGNAM,
+        JEONBUK, JEONNAM, GYEONGBUK, GYEONGNAM,
+        JEJU;
+
+        public static ActivityRegion fromString(String value) {
+            return Stream.of(ActivityRegion.values())
+                    .filter(e -> e.name().equalsIgnoreCase(value))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid ActivityRegion: " + value));
+        }
+    }
+
+    // `equals()`와 `hashCode()` 구현 추가
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserEntity that = (UserEntity) o;
+        return userId != null && userId.equals(that.userId);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
 }

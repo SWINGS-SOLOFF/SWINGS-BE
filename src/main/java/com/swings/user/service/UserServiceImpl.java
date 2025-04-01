@@ -45,6 +45,7 @@ public class UserServiceImpl implements UserService {
                 .introduce(dto.getIntroduce())
                 .userImg(dto.getUserImg())
                 .role(UserEntity.Role.fromString(dto.getRole()))
+                .activityRegion(UserEntity.ActivityRegion.fromString(dto.getActivityRegion()))
                 .build();
 
         return userRepository.save(user);
@@ -91,6 +92,7 @@ public class UserServiceImpl implements UserService {
         if (dto.getUserImg() != null) user.setUserImg(dto.getUserImg());
         if (dto.getRole() != null) user.setRole(UserEntity.Role.fromString(dto.getRole()));
         if (dto.getGender() != null) user.setGender(UserEntity.Gender.fromString(dto.getGender()));
+        if(dto.getActivityRegion()!=null) user.setActivityRegion(UserEntity.ActivityRegion.fromString(dto.getActivityRegion()));
 
         return userRepository.save(user);
     }
