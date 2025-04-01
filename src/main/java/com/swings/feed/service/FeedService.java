@@ -4,11 +4,17 @@ import com.swings.feed.dto.CommentDTO;
 import com.swings.feed.dto.FeedDTO;
 import com.swings.feed.entity.FeedEntity;
 import com.swings.feed.repository.FeedRepository;
+import com.swings.user.dto.UserDTO;
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,11 +37,16 @@ public class FeedService {
         return feedEntityToDTO(savedFeed);
     }
 
-    // 전체 피드 조회
-    public List<FeedDTO> getAllFeeds() {
+    // 전체 피드 조회 – userId를 전달하여 현재 사용자의 좋아요 여부를 계산
+    public List<FeedDTO> getAllFeeds(Long userId) {
         List<FeedEntity> feeds = feedRepository.findAll();
+        UserEntity currentUser = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
         return feeds.stream()
-                .map(this::feedEntityToDTO)
+                .map(feed -> {
+                    boolean liked = feed.getLikedUsers().contains(currentUser);
+                    return new FeedDTO(feed, liked);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -65,25 +76,38 @@ public class FeedService {
     }
 
     // 좋아요 증가
-    public FeedDTO likeFeed(Long feedId) {
+    @Transactional
+    public FeedDTO likeFeed(Long feedId, Long userId) {
         FeedEntity feed = feedRepository.findById(feedId)
                 .orElseThrow(() -> new RuntimeException("Feed not found with id: " + feedId));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
-        feed.setLikes(feed.getLikes() + 1); // 좋아요 증가
+        // 사용자가 이미 좋아요를 눌렀다면 추가하지 않음
+        if (!feed.getLikedUsers().contains(user)) {
+            feed.getLikedUsers().add(user); // 사용자 추가
+            feed.setLikes(feed.getLikes() + 1); // 좋아요 수 증가
+        }
+
         FeedEntity updatedFeed = feedRepository.save(feed);
-        return feedEntityToDTO(updatedFeed);
+        return new FeedDTO(updatedFeed, true);
     }
 
-    // 좋아요 감소
-    public FeedDTO unlikeFeed(Long feedId) {
+    // 좋아요 취소
+    @Transactional
+    public FeedDTO unlikeFeed(Long feedId, Long userId) {
         FeedEntity feed = feedRepository.findById(feedId)
                 .orElseThrow(() -> new RuntimeException("Feed not found with id: " + feedId));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
-        if (feed.getLikes() > 0) {
-            feed.setLikes(feed.getLikes() - 1); // 좋아요 감소
+        if (feed.getLikedUsers().contains(user)) {
+            feed.getLikedUsers().remove(user); // 사용자 제거
+            feed.setLikes(Math.max(0, feed.getLikes() - 1)); // 좋아요 수 감소
         }
+
         FeedEntity updatedFeed = feedRepository.save(feed);
-        return feedEntityToDTO(updatedFeed);
+        return new FeedDTO(updatedFeed, false);
     }
 
     // FeedDTO -> FeedEntity 변환
@@ -109,6 +133,7 @@ public class FeedService {
                 .caption(feedEntity.getCaption())
                 .createdAt(feedEntity.getCreatedAt())
                 .likes(feedEntity.getLikes())
+                .liked(false)
                 .comments(feedEntity.getComments() != null
                         ? feedEntity.getComments().stream()
                         .map(commentEntity -> new CommentDTO(
@@ -116,7 +141,8 @@ public class FeedService {
                                 commentEntity.getUser() != null ? commentEntity.getUser().getUserId() : null,
                                 commentEntity.getUser() != null ? commentEntity.getUser().getUsername() : "Unknown User",
                                 commentEntity.getContent(),
-                                commentEntity.getCreatedAt()))
+                                commentEntity.getCreatedAt()
+                        ))
                         .collect(Collectors.toList())
                         : List.of())
                 .build();
@@ -142,6 +168,31 @@ public class FeedService {
     @Transactional
     public List<FeedDTO> getFeedsByUserId(Long userId) {
         List<FeedEntity> feeds = feedRepository.findByUserUserIdOrderByCreatedAtDesc(userId);
+        return feeds.stream()
+                .map(this::feedEntityToDTO)
+                .collect(Collectors.toList());
+    }
+
+    // 좋아요한 사용자 목록 가져오기
+    @Transactional
+    public List<UserDTO> getLikedUsers(Long feedId) {
+        FeedEntity feed = feedRepository.findById(feedId)
+                .orElseThrow(() -> new RuntimeException("Feed not found with id: " + feedId));
+
+        return feed.getLikedUsers().stream()
+                .map(user -> new UserDTO(
+                        user.getUserId(),
+                        user.getUsername(),
+                        user.getUserImg() != null ? user.getUserImg() : "default-image-url"
+                ))
+                .collect(Collectors.toList());
+    }
+
+    // 페이징 및 랜덤 정렬된 피드 조회
+    public List<FeedDTO> getFeedsRandomized(Long userId, Pageable pageable) {
+        Page<FeedEntity> feedPage = feedRepository.findByUser_UserIdOrderByCreatedAtDesc(userId, pageable);
+        List<FeedEntity> feeds = new ArrayList<>(feedPage.getContent());
+        Collections.shuffle(feeds);
         return feeds.stream()
                 .map(this::feedEntityToDTO)
                 .collect(Collectors.toList());

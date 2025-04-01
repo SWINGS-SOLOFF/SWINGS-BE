@@ -6,7 +6,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -48,4 +50,15 @@ public class FeedEntity {
     @OneToMany(mappedBy = "feed", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<CommentEntity> comments;
+
+    @Setter
+    @Getter
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "feed_likes",
+            joinColumns = @JoinColumn(name = "feed_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<UserEntity> likedUsers = new HashSet<>();
+
 }

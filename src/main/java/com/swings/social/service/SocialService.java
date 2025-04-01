@@ -5,11 +5,13 @@ import com.swings.feed.entity.FeedEntity;
 import com.swings.feed.repository.FeedRepository;
 import com.swings.social.entity.SocialEntity;
 import com.swings.social.repository.SocialRepository;
+import com.swings.user.dto.UserDTO;
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -56,23 +58,40 @@ public class SocialService {
         return false;
     }
 
-    // 특정 유저의 팔로워 목록 조회
-    public List<UserEntity> getFollowers(Long userId) {
+    // 특정 유저의 팔로워 목록 조회 → 해당 유저를 팔로우하는 사용자들
+    public List<UserDTO> getFollowers(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
         return socialRepository.findByFollowee(user)
                 .stream()
-                .map(SocialEntity::getFollower)
+                .map(socialEntity -> {
+                    UserEntity follower = socialEntity.getFollower();
+                    return new UserDTO(
+                            follower.getUserId(),
+                            follower.getUsername(),
+                            follower.getUserImg() != null ? follower.getUserImg() : "default-image-url"
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
-    // 특정 유저의 팔로잉 목록 조회
-    public List<UserEntity> getFollowings(Long userId) {
+    // 특정 유저의 팔로잉 목록 조회 → 해당 유저가 팔로우하는 사용자들
+    public List<UserDTO> getFollowing(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-        return socialRepository.findByFollower(user)
-                .stream()
-                .map(SocialEntity::getFollowee)
+        List<SocialEntity> followings = socialRepository.findByFollower(user);
+        if (followings == null || followings.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return followings.stream()
+                .map(socialEntity -> {
+                    UserEntity followee = socialEntity.getFollowee();
+                    return new UserDTO(
+                            followee.getUserId(),
+                            followee.getUsername(),
+                            followee.getUserImg() != null ? followee.getUserImg() : "default-image-url"
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
@@ -120,4 +139,5 @@ public class SocialService {
                 .map(feed -> new FeedDTO(feed))
                 .collect(Collectors.toList());
     }
+
 }
