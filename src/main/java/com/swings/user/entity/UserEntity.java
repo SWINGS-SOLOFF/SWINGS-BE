@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.stream.Stream;
 
 @Entity
@@ -32,8 +33,15 @@ public class UserEntity {
     @Column(nullable = false)
     private Gender gender; // 성별 (ENUM)
 
+    @Column(nullable = false)
+    private LocalDate birthDate; // 생년월일
+
     @Column(nullable = false, length = 15)
     private String phonenumber; // 전화번호
+
+    @Column(nullable = false, unique = true, length = 100)
+    private String email; // 이메일
+
 
     @Column(nullable = false, length = 50)
     private String job; // 직업
@@ -64,7 +72,6 @@ public class UserEntity {
 
     @Column(nullable = true, columnDefinition = "LONGTEXT")
     private String userImg;
-
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -148,5 +155,10 @@ public class UserEntity {
         }
     }
 
-
+    // 🎯 한국식 나이 계산 메서드
+    public int getKoreanAge() {
+        int currentYear = LocalDate.now().getYear();
+        int birthYear = this.birthDate.getYear();
+        return currentYear - birthYear + 1;
+    }
 }

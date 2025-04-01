@@ -7,6 +7,4 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface MatchGroupRepository extends JpaRepository<MatchGroupEntity, Long> {
-    List<MatchGroupEntity> findByIsPublicTrue(); // 공개된 방만 조회
-}
+public interface MatchGroupRepository extends JpaRepository<MatchGroupEntity, Long> {}

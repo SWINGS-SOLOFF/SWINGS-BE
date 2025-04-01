@@ -41,7 +41,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserByUsername(username));
     }
 
-    // 🔹 현재 로그인한 사용자 정보 조회 (React에서 사용)
+    //현재 로그인한 사용자 정보 조회 (React에서 사용)
     @GetMapping("/me")
     public ResponseEntity<UserEntity> getCurrentUser() {
         return ResponseEntity.ok(userService.getCurrentUser());
@@ -53,4 +53,14 @@ public class UserController {
         UserEntity updatedUser = userService.updateUser(username, dto);
         return ResponseEntity.ok("회원 정보 수정 완료! ID:" + updatedUser.getUserId());
     }
+
+    //회원 탈퇴
+    // 비밀번호 확인 후 탈퇴
+    @PostMapping("/delete/me")
+    public ResponseEntity<String> deleteWithPassword(@RequestBody UserDTO dto) {
+        userService.deleteCurrentUserWithPassword(dto.getPassword());
+        return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
+    }
+
+
 }

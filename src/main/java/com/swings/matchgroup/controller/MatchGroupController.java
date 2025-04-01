@@ -27,9 +27,9 @@ public class MatchGroupController {
 
     // 모든 그룹 조회
     @GetMapping("/list")
-    public ResponseEntity<List<MatchGroupDTO>> getAllPublicMatchGroups() {
+    public ResponseEntity<List<MatchGroupDTO>> getAllMatchGroups() {
         log.info("공개된 그룹 목록 조회 API 호출 됨");
-        List<MatchGroupDTO> groups = matchGroupService.getAllPublicMatchGroups();
+        List<MatchGroupDTO> groups = matchGroupService.getAllMatchGroups();
         return ResponseEntity.ok(groups);  // 공개된 방 리스트 반환
     }
 

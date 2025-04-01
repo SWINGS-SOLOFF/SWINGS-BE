@@ -7,8 +7,8 @@ public interface MatchGroupService {
 
     // 그룹 생성
     MatchGroupDTO createMatchGroup(MatchGroupDTO matchGroupDTO);
-    // 공개된 모든 그룹 보기
-    List<MatchGroupDTO> getAllPublicMatchGroups();
+    // 모든 그룹 보기
+    List<MatchGroupDTO> getAllMatchGroups();
     // 그룹 찾기 By Id
     MatchGroupDTO getMatchGroupById(Long groupId);
 
