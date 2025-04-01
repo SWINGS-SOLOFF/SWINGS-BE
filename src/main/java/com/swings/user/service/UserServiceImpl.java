@@ -9,6 +9,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -34,6 +37,8 @@ public class UserServiceImpl implements UserService {
                 .password(encryptedPassword)
                 .name(dto.getName())
                 .gender(UserEntity.Gender.fromString(dto.getGender()))
+                .birthDate(LocalDate.parse(dto.getBirthDate()))
+                .email(dto.getEmail()) // 이메일 추가
                 .phonenumber(dto.getPhonenumber())
                 .job(dto.getJob())
                 .golfSkill(UserEntity.GolfSkill.fromString(dto.getGolfSkill()))
@@ -45,6 +50,7 @@ public class UserServiceImpl implements UserService {
                 .introduce(dto.getIntroduce())
                 .userImg(dto.getUserImg())
                 .role(UserEntity.Role.fromString(dto.getRole()))
+                .activityRegion(UserEntity.ActivityRegion.fromString(dto.getActivityRegion()))
                 .build();
 
         return userRepository.save(user);
@@ -73,12 +79,28 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
+
+        if (dto.getUsername() != null && !dto.getUsername().equals(user.getUsername())) {
+            userRepository.findByUsername(dto.getUsername())
+                    .ifPresent(u -> {
+                        throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+                    });
+
+            user.setUsername(dto.getUsername());
+        }
+
+        // 나머지 필드 업데이트
         if (dto.getName() != null) user.setName(dto.getName());
         if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
             if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
                 user.setPassword(passwordEncoder.encode(dto.getPassword()));
             }
         }
+        if (dto.getBirthDate() != null) {
+            user.setBirthDate(LocalDate.parse(dto.getBirthDate()));
+        }
+
+        if (dto.getEmail() != null) user.setEmail(dto.getEmail());
         if (dto.getPhonenumber() != null) user.setPhonenumber(dto.getPhonenumber());
         if (dto.getJob() != null) user.setJob(dto.getJob());
         if (dto.getGolfSkill() != null) user.setGolfSkill(UserEntity.GolfSkill.fromString(dto.getGolfSkill()));
@@ -91,7 +113,47 @@ public class UserServiceImpl implements UserService {
         if (dto.getUserImg() != null) user.setUserImg(dto.getUserImg());
         if (dto.getRole() != null) user.setRole(UserEntity.Role.fromString(dto.getRole()));
         if (dto.getGender() != null) user.setGender(UserEntity.Gender.fromString(dto.getGender()));
+        if (dto.getActivityRegion() != null) user.setActivityRegion(UserEntity.ActivityRegion.fromString(dto.getActivityRegion()));
 
         return userRepository.save(user);
+    }
+
+
+    @Override
+    public void deleteCurrentUserWithPassword(String password) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof UserDetails) {
+            String username = ((UserDetails) principal).getUsername();
+            UserEntity user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+            if (!passwordEncoder.matches(password, user.getPassword())) {
+                throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            }
+
+            userRepository.delete(user);
+        } else {
+            throw new IllegalArgumentException("인증 정보가 유효하지 않습니다.");
+        }
+    }
+
+    // 관리자 페이지
+    @Override
+    public List<UserEntity> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public void deleteUserByUsername(String username) {
+        UserEntity user = getUserByUsername(username);
+        userRepository.delete(user);
+    }
+
+    @Override
+    public void updateUserRole(String username, String newRole) {
+        UserEntity user = getUserByUsername(username);
+        user.setRole(UserEntity.Role.fromString(newRole));
+        userRepository.save(user);
     }
 }
