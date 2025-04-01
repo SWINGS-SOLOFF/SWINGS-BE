@@ -48,6 +48,17 @@ public class CommentService {
 
     // 피드에 대한 댓글 조회
     public List<CommentEntity> getCommentsByFeedId(Long feedId) {
-        return commentRepository.findByFeed_FeedIdOrderByCreatedAtDesc(feedId);
+        if (feedId == null) {
+            throw new IllegalArgumentException("Feed ID must not be null");
+        }
+
+        List<CommentEntity> comments = commentRepository.findByFeed_FeedId(feedId);
+
+        if (comments == null) {
+            return List.of(); // null 대신 빈 리스트 반환
+        }
+
+        return comments;
     }
+
 }
