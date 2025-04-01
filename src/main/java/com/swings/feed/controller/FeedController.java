@@ -3,20 +3,28 @@ package com.swings.feed.controller;
 import com.swings.feed.dto.FeedDTO;
 import com.swings.feed.dto.CommentDTO;
 import com.swings.feed.entity.CommentEntity;
+import com.swings.feed.entity.FeedEntity;
+import com.swings.feed.repository.FeedRepository;
 import com.swings.feed.service.CommentService;
 import com.swings.feed.service.FeedService;
+import com.swings.user.dto.UserDTO;
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
+import lombok.Getter;
+import lombok.Setter;
 import net.coobird.thumbnailator.Thumbnails;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -29,11 +37,13 @@ public class FeedController {
     private final FeedService feedService;
     private final UserRepository userRepository;
     private final CommentService commentService;
+    private final FeedRepository feedRepository;
 
-    public FeedController(FeedService feedService, UserRepository userRepository, CommentService commentService) {
+    public FeedController(FeedService feedService, UserRepository userRepository, CommentService commentService, FeedRepository feedRepository) {
         this.feedService = feedService;
         this.userRepository = userRepository;
         this.commentService = commentService;
+        this.feedRepository = feedRepository;
     }
 
     // 피드 생성 (DTO 사용)
@@ -45,9 +55,15 @@ public class FeedController {
 
     // 전체 피드 조회 (DTO 리스트 반환)
     @GetMapping
-    public ResponseEntity<List<FeedDTO>> getAllFeeds() {
-        List<FeedDTO> feedDTOs = feedService.getAllFeeds();
-        return ResponseEntity.ok(feedDTOs);
+    public ResponseEntity<List<FeedDTO>> getFeeds(
+            @RequestParam Long userId,
+            @RequestParam int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        List<FeedDTO> feeds = feedService.getFeedsRandomized(userId, pageable);
+
+        return ResponseEntity.ok(feeds != null ? feeds : List.of());
     }
 
     // 특정 유저의 피드만 조회
@@ -121,16 +137,20 @@ public class FeedController {
 
     // 좋아요 증가
     @PutMapping("/{feedId}/like")
-    public ResponseEntity<FeedDTO> likeFeed(@PathVariable Long feedId) {
-        FeedDTO updatedFeedDTO = feedService.likeFeed(feedId);
+    public ResponseEntity<FeedDTO> likeFeed(@PathVariable Long feedId, @RequestParam Long userId) {
+        FeedDTO updatedFeedDTO = feedService.likeFeed(feedId, userId);
         return ResponseEntity.ok(updatedFeedDTO);
     }
 
-    // 좋아요 감소
+    // 좋아요 취소
     @PutMapping("/{feedId}/unlike")
-    public ResponseEntity<FeedDTO> unlikeFeed(@PathVariable Long feedId) {
-        FeedDTO updatedFeedDTO = feedService.unlikeFeed(feedId);
-        return ResponseEntity.ok(updatedFeedDTO);
+    public ResponseEntity<?> unlikeFeed(@PathVariable Long feedId, @RequestParam Long userId) {
+        if (feedId == null || userId == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Feed ID or User ID cannot be null");
+        }
+
+        feedService.unlikeFeed(feedId, userId);
+        return ResponseEntity.ok("Feed unliked successfully");
     }
 
     // 댓글 추가
@@ -188,5 +208,52 @@ public class FeedController {
     public UserEntity getUserById(Long userId) {
         return userRepository.findById(userId).orElse(null);
     }
+
+    @GetMapping("/{feedId}/liked-users")
+    public ResponseEntity<List<UserDTO>> getLikedUsers(@PathVariable Long feedId) {
+        List<UserDTO> likedUsers = feedService.getLikedUsers(feedId);
+        return ResponseEntity.ok(likedUsers);
+    }
+
+    // UserIdRequest 클래스 정의
+    @Setter
+    @Getter
+    public class UserIdRequest {
+        private Long userId;
+
+    }
+
+    @GetMapping("/feeds/randomized")
+    public ResponseEntity<List<FeedDTO>> getFeedsRandomized(
+            @RequestParam Long userId,
+            @RequestParam int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<FeedEntity> feedPage = feedRepository.findByUser_UserIdOrderByCreatedAtDesc(userId, pageable);
+        List<FeedEntity> feeds = new ArrayList<>(feedPage.getContent());
+        Collections.shuffle(feeds);
+
+        List<FeedDTO> feedDTOs = feeds.stream()
+                .map(this::feedEntityToDTO)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(feedDTOs);
+    }
+
+    private FeedDTO feedEntityToDTO(FeedEntity feedEntity) {
+        FeedDTO feedDTO = new FeedDTO();
+        feedDTO.setFeedId(feedEntity.getFeedId());
+        feedDTO.setCreatedAt(feedEntity.getCreatedAt());
+
+        List<CommentDTO> commentDTOs = feedEntity.getComments().stream()
+                .map(this::commentEntityToDTO)
+                .collect(Collectors.toList());
+        feedDTO.setComments(commentDTOs);
+
+        return feedDTO;
+    }
+
+
 
 }
