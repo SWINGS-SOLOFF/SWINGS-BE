@@ -59,7 +59,7 @@ public class SocialService {
         return false;
     }
 
-    // 특정 유저의 팔로워 목록 조회 → 해당 유저를 팔로우하는 사용자들
+ // 특정 유저의 팔로워 목록 조회 → 해당 유저를 팔로우하는 사용자들
     public List<SocialDTO> getFollowers(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));

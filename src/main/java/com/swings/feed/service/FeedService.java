@@ -178,14 +178,15 @@ public class FeedService {
     public List<UserDTO> getLikedUsers(Long feedId) {
         FeedEntity feed = feedRepository.findById(feedId)
                 .orElseThrow(() -> new RuntimeException("Feed not found with id: " + feedId));
-
         return feed.getLikedUsers().stream()
-                .map(user -> new UserDTO(
-                        user.getUserId(),
-                        user.getUsername(),
-                        user.getUserImg() != null ? user.getUserImg() : "default-image-url"
-                ))
-                .collect(Collectors.toList());
+        .map(user -> {
+            UserDTO userDTO = new UserDTO();
+            userDTO.setUserId(user.getUserId());
+            userDTO.setUsername(user.getUsername());
+            userDTO.setUserImg(user.getUserImg() != null ? user.getUserImg() : "default-image-url");
+            return userDTO;
+        })
+        .collect(Collectors.toList());
     }
 
     // 페이징 및 랜덤 정렬된 피드 조회
