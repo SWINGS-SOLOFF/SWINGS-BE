@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "match_group")
+@Table(name = "matchGroup")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,8 +16,8 @@ public class MatchGroupEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long matchGroupId;
 
-    @Column(nullable = false)
-    private String username; // 유저 이름 필드
+    @Column(nullable = true)
+    private String groupName; // 그룹
 
     @Column(nullable = false)
     private String location; // 골프장 장소
@@ -38,12 +38,12 @@ public class MatchGroupEntity {
     private String ageRange; // 연령
 
     @Column
-    private String additionalOptions; // 기타 옵션
-
-    @Column(nullable = false)
-    private Boolean isPublic; // 방 공개 여부
+    private String description; // 그룹 설명
 
     @Column(nullable = false)
     private int maxParticipants; // 최대 인원 수
+
+    @Column(nullable = false)
+    private String matchType;
 
 }

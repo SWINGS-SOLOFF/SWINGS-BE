@@ -25,14 +25,16 @@ public class MatchGroupServiceImpl implements MatchGroupService {
         return toDTO(matchGroup); // 저장된 Entity를 DTO로 변환하여 반환
     }
     
-    // 공개 그룹 모두 보기
+    // 그룹 모두 보기
     @Override
-    public List<MatchGroupDTO> getAllPublicMatchGroups() {
-        log.info("공개된 방 목록 조회 요청");
-        return matchGroupRepository.findByIsPublicTrue()
-                .stream()
+    public List<MatchGroupDTO> getAllMatchGroups() {
+        log.info("전체 방 목록 조회 요청 실행");
+        List<MatchGroupEntity> groups = matchGroupRepository.findAll();
+        log.info("조회된 전체 그룹 개수: {}", groups.size());
+
+        return groups.stream()
                 .map(this::toDTO)
-                .collect(Collectors.toList());  // 공개된 방만 리스트로 변환 후 반환
+                .collect(Collectors.toList());
     }
 
     // 그룹 찾기 By Id
@@ -52,15 +54,15 @@ public class MatchGroupServiceImpl implements MatchGroupService {
     private MatchGroupDTO toDTO(MatchGroupEntity entity) {
         return MatchGroupDTO.builder()
                 .matchGroupId(entity.getMatchGroupId())
-                .username(entity.getUsername())
+                .groupName(entity.getGroupName())
                 .location(entity.getLocation())
                 .schedule(entity.getSchedule())
                 .playStyle(entity.getPlayStyle())
                 .genderRatio(entity.getGenderRatio())
                 .skillLevel(entity.getSkillLevel())
                 .ageRange(entity.getAgeRange())
-                .additionalOptions(entity.getAdditionalOptions())
-                .isPublic(entity.getIsPublic())
+                .description(entity.getDescription())
+                .matchType(entity.getMatchType())
                 .maxParticipants(entity.getMaxParticipants())
                 .build();
     }
@@ -69,15 +71,15 @@ public class MatchGroupServiceImpl implements MatchGroupService {
     private MatchGroupEntity toEntity(MatchGroupDTO dto) {
         return MatchGroupEntity.builder()
                 .matchGroupId(dto.getMatchGroupId())
-                .username(dto.getUsername())
+                .groupName(dto.getGroupName())
                 .location(dto.getLocation())
                 .schedule(dto.getSchedule())
                 .playStyle(dto.getPlayStyle())
                 .genderRatio(dto.getGenderRatio())
                 .skillLevel(dto.getSkillLevel())
                 .ageRange(dto.getAgeRange())
-                .additionalOptions(dto.getAdditionalOptions())
-                .isPublic(dto.getIsPublic())
+                .description(dto.getDescription())
+                .matchType(dto.getMatchType())
                 .maxParticipants(dto.getMaxParticipants())
                 .build();
     }
