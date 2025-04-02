@@ -74,34 +74,37 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    // ✅ 추가된 부분: UserEntity -> UserDTO 변환
+    @Override
     public UserDTO getCurrentUserDto() {
         return convertToDto(getCurrentUser());
     }
 
-    private UserDTO convertToDto(UserEntity user) {
+    @Override
+    public UserDTO convertToDto(UserEntity user) {
+
         UserDTO dto = new UserDTO();
         dto.setUserId(user.getUserId());
         dto.setUsername(user.getUsername());
-        dto.setPassword(null); // 보안상 null 처리
+        dto.setPassword(null); // 보안상 비밀번호는 숨김
         dto.setName(user.getName());
-        dto.setBirthDate(user.getBirthDate().toString());
-        dto.setPhonenumber(user.getPhonenumber());
-        dto.setEmail(user.getEmail());
-        dto.setJob(user.getJob());
-        dto.setGolfSkill(user.getGolfSkill().name());
-        dto.setMbti(user.getMbti());
-        dto.setHobbies(user.getHobbies());
-        dto.setReligion(user.getReligion());
-        dto.setSmoking(user.getSmoking().name());
-        dto.setDrinking(user.getDrinking().name());
-        dto.setIntroduce(user.getIntroduce());
-        dto.setUserImg(user.getUserImg());
-        dto.setRole(user.getRole().name());
-        dto.setGender(user.getGender().name());
-        dto.setActivityRegion(user.getActivityRegion().name());
+        dto.setBirthDate(user.getBirthDate() != null ? user.getBirthDate().toString() : "1900-01-01");
+        dto.setPhonenumber(user.getPhonenumber() != null ? user.getPhonenumber() : "000-0000-0000");
+        dto.setEmail(user.getEmail() != null ? user.getEmail() : "unknown@email.com");
+        dto.setJob(user.getJob() != null ? user.getJob() : "unknown");
+        dto.setGolfSkill(user.getGolfSkill() != null ? user.getGolfSkill().name() : "beginner");
+        dto.setMbti(user.getMbti() != null ? user.getMbti() : "NONE");
+        dto.setHobbies(user.getHobbies() != null ? user.getHobbies() : "");
+        dto.setReligion(user.getReligion() != null ? user.getReligion() : "무교");
+        dto.setSmoking(user.getSmoking() != null ? user.getSmoking().name() : "no");
+        dto.setDrinking(user.getDrinking() != null ? user.getDrinking().name() : "no");
+        dto.setIntroduce(user.getIntroduce() != null ? user.getIntroduce() : "");
+        dto.setUserImg(user.getUserImg()); // null 허용
+        dto.setRole(user.getRole() != null ? user.getRole().name() : "player");
+        dto.setGender(user.getGender() != null ? user.getGender().name() : "male");
+        dto.setActivityRegion(user.getActivityRegion() != null ? user.getActivityRegion().name() : "SEOUL");
         return dto;
     }
+
 
     @Override
     public UserEntity updateUser(String username, UserDTO dto) {
@@ -168,6 +171,22 @@ public class UserServiceImpl implements UserService {
     public List<UserEntity> getAllUsers() {
         return userRepository.findAll();
     }
+
+    @Override
+    public List<UserDTO> getAllUsersDto() {
+        return userRepository.findAll().stream()
+                .map(user -> {
+                    try {
+                        return convertToDto(user);
+                    } catch (Exception e) {
+                        System.out.println("❌ DTO 변환 실패: userId=" + user.getUserId() + " → " + e.getMessage());
+                        return null; // 또는 throw 다시 던지기
+                    }
+                })
+                .filter(dto -> dto != null)
+                .toList();
+    }
+
 
     @Override
     public void deleteUserByUsername(String username) {
