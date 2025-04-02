@@ -30,6 +30,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
+
+    //결제 관련 라이브러리
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+
     // Thumbnailator 라이브러리 추가
     implementation 'net.coobird:thumbnailator:0.4.14'
 
