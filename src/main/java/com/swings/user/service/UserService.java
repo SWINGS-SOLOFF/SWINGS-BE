@@ -10,13 +10,12 @@ public interface UserService {
     UserEntity registerUser(UserDTO dto); // 회원가입
     UserEntity getUserByUsername(String username); // 특정 사용자 조회
     UserEntity getCurrentUser(); // 현재 로그인한 사용자 조회
+    UserDTO getCurrentUserDto(); // ✅ 현재 사용자 DTO 반환 (프론트 전용)
     UserEntity updateUser(String username, UserDTO dto); // 사용자 정보 수정
     void deleteCurrentUserWithPassword(String password); // 비밀번호를 확인하여 회원탈퇴
 
-    //관리자페이지
+    // 관리자페이지
     List<UserEntity> getAllUsers();
     void deleteUserByUsername(String username);
     void updateUserRole(String username, String newRole);
-
-
 }

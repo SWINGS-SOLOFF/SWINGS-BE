@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//@CrossOrigin(origins = "http://localhost:5173") // 프론트엔드 요청 허용
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -41,34 +40,33 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    //특정 ID의 사용자 정보 조회
+    // 🔄 특정 ID의 사용자 정보 조회 (원래는 UserEntity 반환 → 선택적으로 DTO로 변경 가능)
     @GetMapping("/{username}")
     public ResponseEntity<UserEntity> getUserByUsername(@PathVariable String username) {
         return ResponseEntity.ok(userService.getUserByUsername(username));
     }
 
-    //현재 로그인한 사용자 정보 조회 (React에서 사용)
+    // ✅ 현재 로그인한 사용자 정보 조회 (Lazy 문제 방지용 DTO 반환)
     @GetMapping("/me")
-    public ResponseEntity<UserEntity> getCurrentUser() {
-        return ResponseEntity.ok(userService.getCurrentUser());
+    public ResponseEntity<UserDTO> getCurrentUser() {
+        return ResponseEntity.ok(userService.getCurrentUserDto());
     }
 
-    //회원정보 수정
+    // 회원정보 수정
     @PatchMapping("/{username}")
     public ResponseEntity<String> updateUser(@PathVariable String username, @RequestBody UserDTO dto) {
         UserEntity updatedUser = userService.updateUser(username, dto);
         return ResponseEntity.ok("회원 정보 수정 완료! ID:" + updatedUser.getUserId());
     }
 
-    //회원 탈퇴
-    // 비밀번호 확인 후 탈퇴
+    // 회원 탈퇴
     @PostMapping("/delete/me")
     public ResponseEntity<String> deleteWithPassword(@RequestBody UserDTO dto) {
         userService.deleteCurrentUserWithPassword(dto.getPassword());
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
 
-    //내 포인트 사용내역 조회
+    // 내 포인트 사용내역 조회
     @GetMapping("/{username}/points")
     public ResponseEntity<List<UserPointDTO>> getMyPointHistory(@PathVariable String username) {
         return ResponseEntity.ok(userPointService.findPointLogByUsername(username));
@@ -84,7 +82,7 @@ public class UserController {
         return ResponseEntity.ok("포인트 충전 완료");
     }
 
-    //포인트 사용
+    // 포인트 사용
     @PostMapping("/{username}/points/use")
     public ResponseEntity<String> usePoints(
             @PathVariable String username,

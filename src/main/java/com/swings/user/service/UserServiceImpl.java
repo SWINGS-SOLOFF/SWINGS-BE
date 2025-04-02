@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
                 .name(dto.getName())
                 .gender(UserEntity.Gender.fromString(dto.getGender()))
                 .birthDate(LocalDate.parse(dto.getBirthDate()))
-                .email(dto.getEmail()) // 이메일 추가
+                .email(dto.getEmail())
                 .phonenumber(dto.getPhonenumber())
                 .job(dto.getJob())
                 .golfSkill(UserEntity.GolfSkill.fromString(dto.getGolfSkill()))
@@ -74,11 +74,39 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    // ✅ 추가된 부분: UserEntity -> UserDTO 변환
+    public UserDTO getCurrentUserDto() {
+        return convertToDto(getCurrentUser());
+    }
+
+    private UserDTO convertToDto(UserEntity user) {
+        UserDTO dto = new UserDTO();
+        dto.setUserId(user.getUserId());
+        dto.setUsername(user.getUsername());
+        dto.setPassword(null); // 보안상 null 처리
+        dto.setName(user.getName());
+        dto.setBirthDate(user.getBirthDate().toString());
+        dto.setPhonenumber(user.getPhonenumber());
+        dto.setEmail(user.getEmail());
+        dto.setJob(user.getJob());
+        dto.setGolfSkill(user.getGolfSkill().name());
+        dto.setMbti(user.getMbti());
+        dto.setHobbies(user.getHobbies());
+        dto.setReligion(user.getReligion());
+        dto.setSmoking(user.getSmoking().name());
+        dto.setDrinking(user.getDrinking().name());
+        dto.setIntroduce(user.getIntroduce());
+        dto.setUserImg(user.getUserImg());
+        dto.setRole(user.getRole().name());
+        dto.setGender(user.getGender().name());
+        dto.setActivityRegion(user.getActivityRegion().name());
+        return dto;
+    }
+
     @Override
     public UserEntity updateUser(String username, UserDTO dto) {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
 
         if (dto.getUsername() != null && !dto.getUsername().equals(user.getUsername())) {
             userRepository.findByUsername(dto.getUsername())
@@ -89,7 +117,6 @@ public class UserServiceImpl implements UserService {
             user.setUsername(dto.getUsername());
         }
 
-        // 나머지 필드 업데이트
         if (dto.getName() != null) user.setName(dto.getName());
         if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
             if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
@@ -118,7 +145,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-
     @Override
     public void deleteCurrentUserWithPassword(String password) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -138,7 +164,6 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    // 관리자 페이지
     @Override
     public List<UserEntity> getAllUsers() {
         return userRepository.findAll();
