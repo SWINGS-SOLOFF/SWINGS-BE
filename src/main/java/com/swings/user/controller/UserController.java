@@ -66,29 +66,40 @@ public class UserController {
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
 
-    // 내 포인트 사용내역 조회
-    @GetMapping("/{username}/points")
-    public ResponseEntity<List<UserPointDTO>> getMyPointHistory(@PathVariable String username) {
+    // 로그인된 사용자 포인트 잔액 조회
+    @GetMapping("/me/point")
+    public ResponseEntity<Integer> getMyPointBalance() {
+        int balance = userService.getCurrentUser().getPointBalance();
+        return ResponseEntity.ok(balance);
+    }
+
+    // 로그인된 사용자 포인트 이력
+    @GetMapping("/me/pointslog")
+    public ResponseEntity<List<UserPointDTO>> getMyPointHistory() {
+        String username = userService.getCurrentUser().getUsername();
         return ResponseEntity.ok(userPointService.findPointLogByUsername(username));
     }
 
-    // 포인트 충전
-    @PostMapping("/{username}/points/charge")
+    @PostMapping("/me/points/charge")
     public ResponseEntity<String> chargePoints(
-            @PathVariable String username,
             @RequestParam int amount,
             @RequestParam(defaultValue = "포인트 충전") String description) {
+
+        String username = userService.getCurrentUser().getUsername(); // 🔹 로그인된 사용자에서 추출
         userPointService.chargePoint(username, amount, description);
+
         return ResponseEntity.ok("포인트 충전 완료");
     }
 
-    // 포인트 사용
-    @PostMapping("/{username}/points/use")
+    @PostMapping("/me/points/use")
     public ResponseEntity<String> usePoints(
-            @PathVariable String username,
             @RequestParam int amount,
             @RequestParam(defaultValue = "포인트 사용") String description) {
+
+        String username = userService.getCurrentUser().getUsername();
         userPointService.usePoint(username, amount, description);
+
         return ResponseEntity.ok("포인트 사용 완료");
     }
+
 }
