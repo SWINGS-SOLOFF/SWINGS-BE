@@ -1,6 +1,8 @@
 package com.swings.user.controller;
 
+import com.swings.user.dto.UserPointDTO;
 import com.swings.user.entity.UserEntity;
+import com.swings.user.service.UserPointService;
 import com.swings.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import java.util.List;
 public class AdminController {
 
     private final UserService userService;
+    private final UserPointService userPointService;
 
     // 전체 유저 조회
     @GetMapping("/users")
@@ -39,5 +42,11 @@ public class AdminController {
     public ResponseEntity<String> changeRole(@PathVariable String username, @RequestParam String role) {
         userService.updateUserRole(username, role);
         return ResponseEntity.ok("역할 변경 완료");
+    }
+
+    // 특정 유저 포인트 내역 조회
+    @GetMapping("/users/{username}/points")
+    public ResponseEntity<List<UserPointDTO>> getUserPoints(@PathVariable String username) {
+        return ResponseEntity.ok(userPointService.findPointLogByUsername(username));
     }
 }

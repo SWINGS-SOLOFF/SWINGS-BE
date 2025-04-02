@@ -5,7 +5,9 @@ import lombok.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.stream.Stream;
+
 
 @Entity
 @Getter
@@ -83,6 +85,15 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ActivityRegion activityRegion; // 활동 지역 (도/광역시 단위 ENUM)
+
+    //포인트 금액
+    @Column(nullable = false)
+    private int pointBalance = 0;
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserPointEntity> pointHistory;
+
 
 
     // ✅ `createdAt`이 NULL이면 자동 설정 (JPA에서 NULL 방지)
