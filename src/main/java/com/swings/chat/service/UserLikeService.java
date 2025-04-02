@@ -1,4 +1,5 @@
 package com.swings.chat.service;
+
 import com.swings.chat.entity.UserLikeEntity;
 import com.swings.chat.repository.UserLikeRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,11 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserLikeService {
 
     private final UserLikeRepository userLikeRepository;
+    private final ChatRoomService chatRoomService; // ✅ 채팅방 서비스 주입
 
     // 좋아요 저장
     @Transactional
     public void likeUser(String fromUserId, String toUserId) {
-        // 특정 대상에게 이미 좋아요 눌렀는지 확인
         boolean alreadyLiked = userLikeRepository.existsByFromUserIdAndToUserId(fromUserId, toUserId);
 
         if (!alreadyLiked) {
@@ -23,9 +24,14 @@ public class UserLikeService {
                     .toUserId(toUserId)
                     .build());
         }
+
+        // ✅ 서로 좋아요를 눌렀다면 → 채팅방 생성
+        boolean matched = isMatched(fromUserId, toUserId);
+        if (matched) {
+            chatRoomService.createOrGetChatRoom(fromUserId, toUserId);
+        }
     }
 
-    // 두 유저가 서로 좋아요 했는지 확인 (매칭 여부)
     public boolean isMatched(String fromUserId, String toUserId) {
         return userLikeRepository.countMutualLike(fromUserId, toUserId) == 2;
     }

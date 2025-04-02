@@ -3,26 +3,31 @@ package com.swings.chat.controller;
 import com.swings.chat.dto.ChatMessageDTO;
 import com.swings.chat.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
-@Controller  // WebSocket 전용 컨트롤러
+@Controller
 @RequiredArgsConstructor
+@Slf4j
 public class ChatWebSocketController {
 
     private final ChatMessageService chatMessageService;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    // WebSocket 메시지 처리
-    @MessageMapping("/chat.sendMessage")
-    @SendTo("/topic/chat")
-    public ChatMessageDTO sendMessage(ChatMessageDTO message) {
-        // 메시지 저장 (WebSocket에서 메시지 저장)
-        System.out.println("Received Message: " + message.getContent()); // 로그 출력
+    // 클라이언트가 "/app/chat/message"로 메시지 보낼 때 처리
+    @MessageMapping("/chat/message")
+    public void handleChatMessage(ChatMessageDTO message) {
+        log.info("📩 메시지 수신: {}", message);
 
+        // DB 저장
         chatMessageService.saveMessage(message.getRoomId(), message.getSender(), message.getContent());
 
-        // 클라이언트에게 메시지 전송
-        return message;
+        // 특정 채팅방 구독자에게 메시지 전송
+        messagingTemplate.convertAndSend(
+                "/topic/chat/" + message.getRoomId(), // 예: /topic/chat/2
+                message
+        );
     }
 }

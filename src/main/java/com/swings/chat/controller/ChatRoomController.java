@@ -17,9 +17,8 @@ public class ChatRoomController {
 
     // ✅ 1. 특정 유저가 속한 채팅방 목록 조회 API
     @GetMapping("/rooms")
-    public ResponseEntity<List<ChatRoomEntity>> getUserChatRooms(@RequestParam String userId) {
-        List<ChatRoomEntity> chatRooms = chatRoomService.getChatRoomsByUser(userId);
-        return ResponseEntity.ok(chatRooms);
+    public List<ChatRoomEntity> getRooms(@RequestParam String userId) {
+        return chatRoomService.getChatRoomsByUser(userId); // ✅ 자동으로 JSON으로 직렬화됨
     }
 
     // 기존 코드 (채팅방 생성 API)

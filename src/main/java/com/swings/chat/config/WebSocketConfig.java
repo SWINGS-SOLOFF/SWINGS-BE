@@ -21,8 +21,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws-chat").setAllowedOrigins("*"); // withSockJS() 제거
+        registry.addEndpoint("/ws")
+                .setAllowedOriginPatterns("*") // ✅ 이렇게 바꾸면 allowCredentials와 함께 사용 가능
+                .withSockJS();
     }
+
 
 
 }
