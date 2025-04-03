@@ -36,3 +36,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+###결제 관련
+# Toss 결제 키 파일
+toss-keys.txt
+

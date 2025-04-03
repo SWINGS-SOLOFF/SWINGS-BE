@@ -10,6 +10,8 @@ import lombok.*;
 public class MatchGroupDTO {
 
     private Long matchGroupId;
+    private Long hostId;
+    private String hostUsername;
     private String groupName;
     private String location;
     private String schedule;
