@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.Key;
 import java.util.Date;
 
@@ -17,36 +19,46 @@ public class JwtTokenProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
-    @Value("${jwt.secret}")
-    private String SECRET_KEY;
+    @Value("${jwt.secret-file}")
+    private String secretKeyFile; // 🔑 설정파일에서 파일 경로 받기
 
     @Value("${jwt.expiration}")
-    private long expirationTime; // 설정 파일에서 만료 시간 가져옴
+    private long expirationTime;
 
     private Key signingKey;
 
-    // 🔹 @PostConstruct 추가 (Spring이 자동으로 실행하여 JWT 키를 초기화)
-    @PostConstruct
-    public void init() {
-        if (SECRET_KEY == null || SECRET_KEY.isEmpty()) {
-            logger.error("🚨 JWT Secret Key가 설정되지 않았습니다! 서버를 종료합니다.");
-            throw new IllegalStateException("JWT Secret Key가 설정되지 않았습니다!");
+    // ✅ 파일에서 JWT SecretKey 로드
+    private String loadSecretKeyFromFile(String filePath) {
+        try {
+            logger.info("🔐 JWT 키 파일 로드 중: {}", filePath);
+            return Files.readString(Paths.get(filePath)).trim();
+        } catch (Exception e) {
+            logger.error("🚨 JWT SecretKey 파일 로드 실패: {}", e.getMessage());
+            throw new RuntimeException("JWT SecretKey 파일 읽기 실패", e);
         }
-        this.signingKey = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
-    // 🔹 JWT 생성 (유저네임 + 단일 역할 포함)
+    @PostConstruct
+    public void init() {
+        String secretKey = loadSecretKeyFromFile(secretKeyFile);
+        if (secretKey == null || secretKey.isEmpty()) {
+            logger.error("🚫 JWT Secret Key가 비어있음! 서버 종료");
+            throw new IllegalStateException("JWT Secret Key가 설정되지 않았습니다!");
+        }
+        this.signingKey = Keys.hmacShaKeyFor(secretKey.getBytes());
+        logger.info("✅ JWT Secret Key 초기화 완료");
+    }
+
     public String generateToken(String username, UserEntity.Role role) {
         return Jwts.builder()
                 .setSubject(username)
-                .claim("role", role.name()) // 🔹 단일 역할만 저장
+                .claim("role", role.name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(signingKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // 🔹 JWT 검증 (위조 검사)
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token);
