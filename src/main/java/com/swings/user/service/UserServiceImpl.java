@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
                 .name(dto.getName())
                 .gender(UserEntity.Gender.fromString(dto.getGender()))
                 .birthDate(LocalDate.parse(dto.getBirthDate()))
-                .email(dto.getEmail()) // 이메일 추가
+                .email(dto.getEmail())
                 .phonenumber(dto.getPhonenumber())
                 .job(dto.getJob())
                 .golfSkill(UserEntity.GolfSkill.fromString(dto.getGolfSkill()))
@@ -75,10 +75,41 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDTO getCurrentUserDto() {
+        return convertToDto(getCurrentUser());
+    }
+
+    @Override
+    public UserDTO convertToDto(UserEntity user) {
+
+        UserDTO dto = new UserDTO();
+        dto.setUserId(user.getUserId());
+        dto.setUsername(user.getUsername());
+        dto.setPassword(null); // 보안상 비밀번호는 숨김
+        dto.setName(user.getName());
+        dto.setBirthDate(user.getBirthDate() != null ? user.getBirthDate().toString() : "1900-01-01");
+        dto.setPhonenumber(user.getPhonenumber() != null ? user.getPhonenumber() : "000-0000-0000");
+        dto.setEmail(user.getEmail() != null ? user.getEmail() : "unknown@email.com");
+        dto.setJob(user.getJob() != null ? user.getJob() : "unknown");
+        dto.setGolfSkill(user.getGolfSkill() != null ? user.getGolfSkill().name() : "beginner");
+        dto.setMbti(user.getMbti() != null ? user.getMbti() : "NONE");
+        dto.setHobbies(user.getHobbies() != null ? user.getHobbies() : "");
+        dto.setReligion(user.getReligion() != null ? user.getReligion() : "무교");
+        dto.setSmoking(user.getSmoking() != null ? user.getSmoking().name() : "no");
+        dto.setDrinking(user.getDrinking() != null ? user.getDrinking().name() : "no");
+        dto.setIntroduce(user.getIntroduce() != null ? user.getIntroduce() : "");
+        dto.setUserImg(user.getUserImg()); // null 허용
+        dto.setRole(user.getRole() != null ? user.getRole().name() : "player");
+        dto.setGender(user.getGender() != null ? user.getGender().name() : "male");
+        dto.setActivityRegion(user.getActivityRegion() != null ? user.getActivityRegion().name() : "SEOUL");
+        return dto;
+    }
+
+
+    @Override
     public UserEntity updateUser(String username, UserDTO dto) {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
 
         if (dto.getUsername() != null && !dto.getUsername().equals(user.getUsername())) {
             userRepository.findByUsername(dto.getUsername())
@@ -89,7 +120,6 @@ public class UserServiceImpl implements UserService {
             user.setUsername(dto.getUsername());
         }
 
-        // 나머지 필드 업데이트
         if (dto.getName() != null) user.setName(dto.getName());
         if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
             if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
@@ -118,7 +148,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-
     @Override
     public void deleteCurrentUserWithPassword(String password) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -138,11 +167,26 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    // 관리자 페이지
     @Override
     public List<UserEntity> getAllUsers() {
         return userRepository.findAll();
     }
+
+    @Override
+    public List<UserDTO> getAllUsersDto() {
+        return userRepository.findAll().stream()
+                .map(user -> {
+                    try {
+                        return convertToDto(user);
+                    } catch (Exception e) {
+                        System.out.println("❌ DTO 변환 실패: userId=" + user.getUserId() + " → " + e.getMessage());
+                        return null; // 또는 throw 다시 던지기
+                    }
+                })
+                .filter(dto -> dto != null)
+                .toList();
+    }
+
 
     @Override
     public void deleteUserByUsername(String username) {

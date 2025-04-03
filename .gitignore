@@ -41,3 +41,6 @@ out/
 ###결제 관련
 # Toss 결제 키 파일
 toss-keys.txt
+
+#jwt 시크릿키
+jwt-secret.txt
