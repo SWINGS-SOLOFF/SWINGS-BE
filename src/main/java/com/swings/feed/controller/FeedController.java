@@ -56,12 +56,18 @@ public class FeedController {
     // 전체 피드 조회 (DTO 리스트 반환)
     @GetMapping
     public ResponseEntity<List<FeedDTO>> getFeeds(
-            @RequestParam Long userId,
+            @RequestParam(required = false) Long userId, 
             @RequestParam int page,
             @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        List<FeedDTO> feeds = feedService.getFeedsRandomized(userId, pageable);
+        List<FeedDTO> feeds;
+        
+        if (userId == null) {
+            feeds = feedService.getAllFeeds(pageable);
+        } else {
+            feeds = feedService.getFeedsRandomized(userId, pageable);
+        }
 
         return ResponseEntity.ok(feeds != null ? feeds : List.of());
     }

@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface FeedService {
     FeedDTO createFeed(FeedDTO feedDTO);
-    List<FeedDTO> getAllFeeds(Long userId);
+    List<FeedDTO> getAllFeeds(Pageable pageable);
     Optional<FeedDTO> getFeedById(Long feedId);
     FeedDTO updateFeed(Long feedId, FeedDTO updatedFeedDTO);
     void deleteFeed(Long feedId);

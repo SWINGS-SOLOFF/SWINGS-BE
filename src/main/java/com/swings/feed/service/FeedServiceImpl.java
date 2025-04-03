@@ -38,14 +38,11 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedDTO> getAllFeeds(Long userId) {
-        List<FeedEntity> feeds = feedRepository.findAll();
-        UserEntity currentUser = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-        return feeds.stream().map(feed -> {
-            boolean liked = feed.getLikedUsers().contains(currentUser);
-            return new FeedDTO(feed, liked);
-        }).collect(Collectors.toList());
+    public List<FeedDTO> getAllFeeds(Pageable pageable) {
+        Page<FeedEntity> feedPage = feedRepository.findAll(pageable);
+        return feedPage.stream()
+                .map(this::feedEntityToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
