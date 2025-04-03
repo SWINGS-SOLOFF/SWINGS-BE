@@ -10,36 +10,40 @@ import com.swings.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
-    private final WebClient tossWebClient; // TossConfig에서 Bean으로 등록한 WebClient
+    private final WebClient tossWebClient;
     private final UserRepository userRepository;
     private final UserPointRepository userPointRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public String confirmPayment(PaymentRequestDTO requestDTO) {
-        String response = tossWebClient.post()
-                .uri("/payments/confirm")
-                .bodyValue(requestDTO)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
-
-        // ✅ 결제 성공 후 포인트 자동 충전
         try {
+            // Toss 결제 확인 요청
+            String response = tossWebClient.post()
+                    .uri("/payments/confirm")
+                    .bodyValue(requestDTO)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            System.out.println("✅ Toss API 응답 수신: " + response);
+
             JsonNode root = objectMapper.readTree(response);
 
-            long userId = Long.parseLong(root.get("customerName").asText());
-            int amount = root.get("amount").asInt();
+            // 🔥 여기 수정: 프론트에서 넘긴 customerId 사용
+            long userId = requestDTO.getCustomerId();
+            int amount = root.get("totalAmount").asInt(); // or "amount"
 
             UserEntity user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
 
-            // 포인트 잔액 증가
+            // 포인트 잔액 업데이트
             user.setPointBalance(user.getPointBalance() + amount);
             userRepository.save(user);
 
@@ -52,11 +56,15 @@ public class PaymentServiceImpl implements PaymentService {
                     .build();
             userPointRepository.save(log);
 
+            return response;
+
+        } catch (WebClientResponseException e) {
+            System.err.println("❌ Toss API 응답 에러: " + e.getResponseBodyAsString());
+            throw e;
+
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException("결제 처리 중 예외 발생", e);
         }
-
-        return response;
     }
-
 }

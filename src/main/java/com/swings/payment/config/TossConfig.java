@@ -22,10 +22,13 @@ public class TossConfig {
         try {
             secretKey = Files.readString(Paths.get("toss-keys.txt")).trim();
             System.out.println("✅ Toss Secret Key Loaded Successfully");
+            System.out.println("▶ Loaded Secret Key: " + secretKey);
+            System.out.println("▶ Key Length: " + secretKey.length());
         } catch (Exception e) {
             throw new RuntimeException("❌ toss-keys.txt 파일을 읽을 수 없습니다.", e);
         }
     }
+
 
     @Bean
     public WebClient tossWebClient() {
