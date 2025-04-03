@@ -1,5 +1,6 @@
 package com.swings.matchgroup.entity;
 
+import com.swings.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,8 +17,12 @@ public class MatchGroupEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long matchGroupId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "host_id", nullable = false) // DB 컬럼명 명시
+    private UserEntity host; // 방장 (그룹 생성자)
+
     @Column(nullable = true)
-    private String groupName; // 그룹
+    private String groupName; // 그룹 이름
 
     @Column(nullable = false)
     private String location; // 골프장 장소

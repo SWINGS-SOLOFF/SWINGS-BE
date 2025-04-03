@@ -3,8 +3,12 @@ package com.swings.matchgroup.service;
 import com.swings.matchgroup.dto.MatchGroupDTO;
 import com.swings.matchgroup.entity.MatchGroupEntity;
 import com.swings.matchgroup.repository.MatchGroupRepository;
+import com.swings.user.entity.UserEntity;
+import com.swings.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,13 +20,27 @@ import java.util.stream.Collectors;
 public class MatchGroupServiceImpl implements MatchGroupService {
 
     private final MatchGroupRepository matchGroupRepository;
+    private final UserRepository userRepository;
 
     // 그룹 생성
     @Override
     public MatchGroupDTO createMatchGroup(MatchGroupDTO matchGroupDTO) {
         log.info("그룹 생성 요청: {}", matchGroupDTO);
-        MatchGroupEntity matchGroup = matchGroupRepository.save(toEntity(matchGroupDTO));  // DTO를 Entity로 변환 후 저장
-        return toDTO(matchGroup); // 저장된 Entity를 DTO로 변환하여 반환
+
+        // 현재 로그인한 사용자 가져오기
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        // 사용자 정보 조회
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("로그인한 사용자를 찾을 수 없습니다."));
+
+        // Entity로 변환 후 host 설정
+        MatchGroupEntity matchGroup = toEntity(matchGroupDTO);
+        matchGroup.setHost(user); // 방장 저장
+
+        MatchGroupEntity saved = matchGroupRepository.save(matchGroup);
+        return toDTO(saved); // 저장 후 DTO 반환
     }
     
     // 그룹 모두 보기
@@ -54,6 +72,8 @@ public class MatchGroupServiceImpl implements MatchGroupService {
     private MatchGroupDTO toDTO(MatchGroupEntity entity) {
         return MatchGroupDTO.builder()
                 .matchGroupId(entity.getMatchGroupId())
+                .hostId(entity.getHost().getUserId())
+                .hostUsername(entity.getHost().getUsername())
                 .groupName(entity.getGroupName())
                 .location(entity.getLocation())
                 .schedule(entity.getSchedule())
@@ -66,6 +86,7 @@ public class MatchGroupServiceImpl implements MatchGroupService {
                 .maxParticipants(entity.getMaxParticipants())
                 .build();
     }
+
 
     // DTO를 Entity로 변환
     private MatchGroupEntity toEntity(MatchGroupDTO dto) {
