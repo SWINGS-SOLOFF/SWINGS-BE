@@ -7,10 +7,10 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
@@ -20,33 +20,32 @@ public class JwtTokenProvider {
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
     @Value("${jwt.secret-file}")
-    private String secretKeyFile; // 🔑 설정파일에서 파일 경로 받기
+    private Resource secretKeyResource;  // ✅ classpath 또는 file 경로 지원
 
     @Value("${jwt.expiration}")
     private long expirationTime;
 
     private Key signingKey;
 
-    // ✅ 파일에서 JWT SecretKey 로드
-    private String loadSecretKeyFromFile(String filePath) {
+    @PostConstruct
+    public void init() {
         try {
-            logger.info("🔐 JWT 키 파일 로드 중: {}", filePath);
-            return Files.readString(Paths.get(filePath)).trim();
+            logger.info("🔐 JWT 키 파일 로드 중: {}", secretKeyResource.getFilename());
+
+            // ✅ 파일을 InputStream으로 읽고 문자열로 변환
+            String secretKey = new String(secretKeyResource.getInputStream().readAllBytes(), StandardCharsets.UTF_8).trim();
+
+            if (secretKey.isEmpty()) {
+                throw new IllegalStateException("JWT Secret Key가 비어있습니다.");
+            }
+
+            this.signingKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+            logger.info("✅ JWT Secret Key 초기화 완료");
+
         } catch (Exception e) {
             logger.error("🚨 JWT SecretKey 파일 로드 실패: {}", e.getMessage());
             throw new RuntimeException("JWT SecretKey 파일 읽기 실패", e);
         }
-    }
-
-    @PostConstruct
-    public void init() {
-        String secretKey = loadSecretKeyFromFile(secretKeyFile);
-        if (secretKey == null || secretKey.isEmpty()) {
-            logger.error("🚫 JWT Secret Key가 비어있음! 서버 종료");
-            throw new IllegalStateException("JWT Secret Key가 설정되지 않았습니다!");
-        }
-        this.signingKey = Keys.hmacShaKeyFor(secretKey.getBytes());
-        logger.info("✅ JWT Secret Key 초기화 완료");
     }
 
     public String generateToken(String username, UserEntity.Role role) {
