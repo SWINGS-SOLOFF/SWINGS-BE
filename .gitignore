@@ -17,6 +17,7 @@ bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
+
 ### IntelliJ IDEA ###
 .idea
 .idea/
@@ -36,3 +37,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+###결제 관련
+# Toss 결제 키 파일
+toss-keys.txt
