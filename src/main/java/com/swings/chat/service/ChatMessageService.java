@@ -46,4 +46,11 @@ public class ChatMessageService {
         String redisKey = CHAT_KEY_PREFIX + roomId;
         return redisTemplate.opsForList().range(redisKey, 0, -1);
     }
+
+    public List<ChatMessageEntity> getMessagesByRoomId(Long roomId) {
+        // ✅ 해당 메서드를 사용하려면 리포지토리에 정확히 선언되어 있어야 함
+        return chatMessageRepository.findByChatRoom_RoomIdOrderBySentAtAsc(roomId);
+    }
+
+
 }

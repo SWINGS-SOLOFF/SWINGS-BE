@@ -1,13 +1,13 @@
 package com.swings.chat.controller;
 
 import com.swings.chat.dto.ChatMessageDTO;
+import com.swings.chat.entity.ChatMessageEntity;
 import com.swings.chat.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/chat")  // HTTP API만 담당
@@ -22,4 +22,10 @@ public class ChatController {
         chatMessageService.saveMessage(message.getRoomId(), message.getSender(), message.getContent());
         return ResponseEntity.ok("Message saved successfully!");
     }
+
+    @GetMapping("/messages/{roomId}")
+    public List<ChatMessageEntity> getMessages(@PathVariable Long roomId) {
+        return chatMessageService.getMessagesByRoomId(roomId);
+    }
+
 }
