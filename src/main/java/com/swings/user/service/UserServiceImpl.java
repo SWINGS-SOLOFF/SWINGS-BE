@@ -58,6 +58,7 @@ public class UserServiceImpl implements UserService {
 
         UserEntity savedUser = userRepository.save(user);
         emailService.sendEmailVerification(savedUser);
+        System.out.println("[✅ 이메일 인증 메일 전송됨]: " + user.getEmail());
 
         return savedUser;
     }
