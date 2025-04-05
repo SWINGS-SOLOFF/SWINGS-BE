@@ -1,5 +1,6 @@
 package com.swings.user.service;
 
+import com.swings.email.service.EmailService;
 import com.swings.user.dto.UserDTO;
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
@@ -18,6 +19,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Override
     public boolean isUsernameExists(String username) {
@@ -29,6 +31,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
+
 
         String encryptedPassword = passwordEncoder.encode(dto.getPassword());
 
@@ -51,7 +54,11 @@ public class UserServiceImpl implements UserService {
                 .userImg(dto.getUserImg())
                 .role(UserEntity.Role.fromString(dto.getRole()))
                 .activityRegion(UserEntity.ActivityRegion.fromString(dto.getActivityRegion()))
+                .isVerified(false) // 이메일 인증 (default 값은 인증X) 인증 후 로그인 가능
                 .build();
+
+        UserEntity savedUser = userRepository.save(user);
+        emailService.sendEmailVerification(savedUser);
 
         return userRepository.save(user);
     }
