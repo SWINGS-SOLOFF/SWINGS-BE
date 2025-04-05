@@ -32,7 +32,6 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
 
-
         String encryptedPassword = passwordEncoder.encode(dto.getPassword());
 
         UserEntity user = UserEntity.builder()
@@ -60,7 +59,7 @@ public class UserServiceImpl implements UserService {
         UserEntity savedUser = userRepository.save(user);
         emailService.sendEmailVerification(savedUser);
 
-        return userRepository.save(user);
+        return savedUser;
     }
 
     @Override
@@ -88,11 +87,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO convertToDto(UserEntity user) {
-
         UserDTO dto = new UserDTO();
         dto.setUserId(user.getUserId());
         dto.setUsername(user.getUsername());
-        dto.setPassword(null); // 보안상 비밀번호는 숨김
+        dto.setPassword(null);
         dto.setName(user.getName());
         dto.setBirthDate(user.getBirthDate() != null ? user.getBirthDate().toString() : "1900-01-01");
         dto.setPhonenumber(user.getPhonenumber() != null ? user.getPhonenumber() : "000-0000-0000");
@@ -105,13 +103,13 @@ public class UserServiceImpl implements UserService {
         dto.setSmoking(user.getSmoking() != null ? user.getSmoking().name() : "no");
         dto.setDrinking(user.getDrinking() != null ? user.getDrinking().name() : "no");
         dto.setIntroduce(user.getIntroduce() != null ? user.getIntroduce() : "");
-        dto.setUserImg(user.getUserImg()); // null 허용
+        dto.setUserImg(user.getUserImg());
         dto.setRole(user.getRole() != null ? user.getRole().name() : "player");
         dto.setGender(user.getGender() != null ? user.getGender().name() : "male");
         dto.setActivityRegion(user.getActivityRegion() != null ? user.getActivityRegion().name() : "SEOUL");
+        dto.setIsVerified(user.isVerified()); // ✅ 추가
         return dto;
     }
-
 
     @Override
     public UserEntity updateUser(String username, UserDTO dto) {
@@ -123,7 +121,6 @@ public class UserServiceImpl implements UserService {
                     .ifPresent(u -> {
                         throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
                     });
-
             user.setUsername(dto.getUsername());
         }
 
@@ -136,7 +133,6 @@ public class UserServiceImpl implements UserService {
         if (dto.getBirthDate() != null) {
             user.setBirthDate(LocalDate.parse(dto.getBirthDate()));
         }
-
         if (dto.getEmail() != null) user.setEmail(dto.getEmail());
         if (dto.getPhonenumber() != null) user.setPhonenumber(dto.getPhonenumber());
         if (dto.getJob() != null) user.setJob(dto.getJob());
@@ -151,6 +147,11 @@ public class UserServiceImpl implements UserService {
         if (dto.getRole() != null) user.setRole(UserEntity.Role.fromString(dto.getRole()));
         if (dto.getGender() != null) user.setGender(UserEntity.Gender.fromString(dto.getGender()));
         if (dto.getActivityRegion() != null) user.setActivityRegion(UserEntity.ActivityRegion.fromString(dto.getActivityRegion()));
+
+        // ✅ 인증 상태 업데이트
+        if (dto.getIsVerified() != null) {
+            user.setVerified(dto.getIsVerified());
+        }
 
         return userRepository.save(user);
     }
@@ -187,13 +188,12 @@ public class UserServiceImpl implements UserService {
                         return convertToDto(user);
                     } catch (Exception e) {
                         System.out.println("❌ DTO 변환 실패: userId=" + user.getUserId() + " → " + e.getMessage());
-                        return null; // 또는 throw 다시 던지기
+                        return null;
                     }
                 })
                 .filter(dto -> dto != null)
                 .toList();
     }
-
 
     @Override
     public void deleteUserByUsername(String username) {

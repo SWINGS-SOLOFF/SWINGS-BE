@@ -36,4 +36,6 @@ public class UserDTO {
     private String role; // 🔹 Enum 대신 String 사용
     private String gender; // 🔹 Enum 대신 String 사용
     private String activityRegion;
+
+    private Boolean isVerified; // ✅ 이메일 인증 상태 추가
 }
