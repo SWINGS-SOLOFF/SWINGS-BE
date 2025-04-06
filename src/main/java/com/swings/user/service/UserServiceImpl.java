@@ -9,6 +9,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+import java.io.IOException;
+
 
 import java.time.LocalDate;
 import java.util.List;
@@ -157,6 +161,42 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.save(user);
     }
+
+    @Override
+    public void updateProfileImage(MultipartFile image) {
+        UserEntity user = getCurrentUser(); // 현재 로그인한 사용자 가져오기
+
+        if (image != null && !image.isEmpty()) {
+            try {
+                // 파일 저장 경로 설정
+                String uploadDir = "C:/uploads/"; // 업로드 디렉토리
+                String originalFilename = image.getOriginalFilename();
+                String savedFilename = UUID.randomUUID() + "_" + originalFilename; // 고유한 파일명 생성
+                File dest = new File(uploadDir + savedFilename);
+
+                // 기존 프로필 이미지 삭제 (이전 이미지를 덮어쓸 때 삭제)
+                if (user.getUserImg() != null && !user.getUserImg().isEmpty()) {
+                    File oldImage = new File(uploadDir + user.getUserImg()); // 기존 파일 경로
+                    if (oldImage.exists()) {
+                        oldImage.delete(); // 이전 파일 삭제
+                    }
+                }
+
+                // 새로운 이미지 저장
+                image.transferTo(dest); // 파일을 디스크에 저장
+
+                // 사용자 엔티티 업데이트 (프로필 이미지 파일명 업데이트)
+                user.setUserImg(savedFilename); // DB에 새로운 파일명 저장
+                userRepository.save(user); // 사용자 정보 업데이트
+
+            } catch (IOException e) {
+                throw new RuntimeException("이미지 저장 실패: " + e.getMessage());
+            }
+        } else {
+            throw new IllegalArgumentException("이미지가 비어 있습니다.");
+        }
+    }
+
 
     @Override
     public void deleteCurrentUserWithPassword(String password) {

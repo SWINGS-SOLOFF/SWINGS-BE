@@ -11,6 +11,7 @@ import com.swings.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
@@ -59,6 +60,18 @@ public class UserController {
         UserEntity updatedUser = userService.updateUser(username, dto);
         return ResponseEntity.ok("회원 정보 수정 완료! ID:" + updatedUser.getUserId());
     }
+    //프로필 사진 수정
+    @PatchMapping("/me/profile-image")
+    public ResponseEntity<String> updateProfileImage(@RequestParam("image") MultipartFile image) {
+        try {
+            userService.updateProfileImage(image);
+            return ResponseEntity.ok("프로필 이미지가 변경되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("이미지 업데이트 실패: " + e.getMessage());
+        }
+    }
+
+
 
     // 회원 탈퇴
     @PostMapping("/delete/me")

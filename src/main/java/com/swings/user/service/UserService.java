@@ -2,6 +2,7 @@ package com.swings.user.service;
 
 import com.swings.user.dto.UserDTO;
 import com.swings.user.entity.UserEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ public interface UserService {
     UserDTO convertToDto(UserEntity user); // ✅ UserEntity -> DTO 변환
     UserEntity updateUser(String username, UserDTO dto); // 사용자 정보 수정
     void deleteCurrentUserWithPassword(String password); // 비밀번호를 확인하여 회원탈퇴
+    void updateProfileImage(MultipartFile image); //프로필 사진 수정
 
     // 관리자 페이지
     List<UserEntity> getAllUsers(); // (관리자용 내부 호출용 - 유지)
