@@ -90,10 +90,10 @@ public class UserEntity {
     @Column(nullable = false)
     private int pointBalance = 0;
 
-    //회원 인증 토큰
+    //회원 인증 토큰 발급 여부
     @Column(nullable = false)
     private boolean isVerified = false;
-
+    
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserPointEntity> pointHistory;

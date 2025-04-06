@@ -20,4 +20,8 @@ public interface UserService {
     List<UserDTO> getAllUsersDto(); // ✅ 관리자 페이지용 전체 사용자 DTO 반환
     void deleteUserByUsername(String username);
     void updateUserRole(String username, String newRole);
+
+    //비밀번호 리셋
+    void resetPassword(String username);
+
 }

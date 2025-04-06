@@ -84,4 +84,40 @@ public class EmailServiceImpl implements EmailService {
             throw new RuntimeException("이메일 전송에 실패했습니다.", e);
         }
     }
+    @Override
+    public void sendTemporaryPassword(UserEntity user, String tempPassword) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
+
+            helper.setTo(user.getEmail());
+            helper.setSubject("[SWINGS] 임시 비밀번호 안내");
+
+            String html = """
+                <html>
+                  <body style="font-family: 'Segoe UI', sans-serif; background-color: #f7f7f7; padding: 40px;">
+                    <div style="max-width: 500px; margin: auto; background-color: #ffffff; padding: 36px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                      <h2 style="text-align: center; color: #2b2d42;">SWINGS</h2>
+                      <p style="text-align: center; color: #8d99ae;">임시 비밀번호 안내</p>
+                      <p>안녕하세요 <strong>%s</strong>님,</p>
+                      <p>아래 임시 비밀번호로 로그인한 후 비밀번호를 꼭 변경해주세요.</p>
+                      <div style="text-align: center; margin: 30px 0;">
+                        <span style="display: inline-block; padding: 12px 24px; background-color: #2b2d42; color: white; border-radius: 5px; font-size: 18px;">
+                          %s
+                        </span>
+                      </div>
+                      <p style="font-size: 13px; color: #999;">이 비밀번호는 보안을 위해 1회용이며, 재사용하지 마세요.</p>
+                    </div>
+                  </body>
+                </html>
+                """.formatted(user.getUsername(), tempPassword);
+
+            helper.setText(html, true);
+            mailSender.send(mimeMessage);
+
+        } catch (MessagingException e) {
+            throw new RuntimeException("임시 비밀번호 메일 전송 실패", e);
+        }
+    }
+
 }

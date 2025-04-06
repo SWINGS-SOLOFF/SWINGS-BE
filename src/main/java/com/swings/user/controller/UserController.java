@@ -1,5 +1,6 @@
 package com.swings.user.controller;
 
+import com.swings.user.dto.PasswordResetRequestDTO;
 import com.swings.user.dto.UserDTO;
 import com.swings.user.dto.UserPointDTO;
 import com.swings.user.entity.UserEntity;
@@ -100,6 +101,17 @@ public class UserController {
         userPointService.usePoint(username, amount, description);
 
         return ResponseEntity.ok("포인트 사용 완료");
+    }
+
+    //비밀번호 설정
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody PasswordResetRequestDTO request) {
+        try {
+            userService.resetPassword(request.getUsername());
+            return ResponseEntity.ok("임시 비밀번호가 이메일로 전송되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
 }

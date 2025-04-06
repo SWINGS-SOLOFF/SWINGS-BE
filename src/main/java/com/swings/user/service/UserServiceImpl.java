@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -208,4 +209,22 @@ public class UserServiceImpl implements UserService {
         user.setRole(UserEntity.Role.fromString(newRole));
         userRepository.save(user);
     }
+
+    //비밀번호 리셋
+    @Override
+    public void resetPassword(String username) {
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("가입된 아이디가 아닙니다."));
+
+        // ✅ 임시 비밀번호 생성 (8자리)
+        String tempPassword = UUID.randomUUID().toString().substring(0, 8);
+
+        // ✅ 비밀번호 암호화 후 저장
+        user.setPassword(passwordEncoder.encode(tempPassword));
+        userRepository.save(user);
+
+        // ✅ 이메일 전송
+        emailService.sendTemporaryPassword(user, tempPassword);
+    }
+
 }
