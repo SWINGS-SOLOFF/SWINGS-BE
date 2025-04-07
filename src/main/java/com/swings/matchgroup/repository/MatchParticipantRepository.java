@@ -11,11 +11,15 @@ import java.util.List;
 @Repository
 public interface MatchParticipantRepository extends JpaRepository<MatchParticipantEntity, Long> {
 
-    // 특정 그룹의 참가자 목록 조회
-    List<MatchParticipantEntity> findByMatchGroup(MatchGroupEntity matchGroup);
     // 특정 그룹에 참가한 사용자 여부 확인
     boolean existsByMatchGroup_MatchGroupIdAndUser_UserId(Long matchGroupId, Long userId);
-    // MatchGroupId로 바로 조회하는 메서드(불필요한 Entity 조회 방지)
+
+    // 특정 그룹의 전체 참가자 조회 (Entity 불러오지 않고 ID로 조회)
     List<MatchParticipantEntity> findByMatchGroupMatchGroupId(Long matchGroupId);
 
+    // 특정 그룹의 승인된 참가자만 조회
+    List<MatchParticipantEntity> findByMatchGroupMatchGroupIdAndParticipantStatus(
+            Long matchGroupId,
+            MatchParticipantEntity.ParticipantStatus participantStatus
+    );
 }

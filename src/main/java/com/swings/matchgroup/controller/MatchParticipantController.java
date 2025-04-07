@@ -17,13 +17,43 @@ public class MatchParticipantController {
 
     // 참가 신청
     @PostMapping("/join")
-    public ResponseEntity<MatchParticipantDTO> joinMatch(@RequestParam Long groupId, @RequestParam String username) {
-        return ResponseEntity.ok(matchParticipantService.joinMatch(groupId, username));
+    public ResponseEntity<MatchParticipantDTO> joinMatch(
+            @RequestParam("matchGroupId") Long matchGroupId,
+            @RequestParam("username") String username) {
+        return ResponseEntity.ok(matchParticipantService.joinMatch(matchGroupId, username));
     }
 
-    // 특정 방 참가자 목록 조회
-    @GetMapping("/list/{groupId}")
-    public ResponseEntity<List<MatchParticipantDTO>> getParticipantsByGroupId(@PathVariable Long groupId) {
-        return ResponseEntity.ok(matchParticipantService.getParticipantsByGroupId(groupId));
+    // 참가 신청 승인(방장)
+    @PostMapping("/approve")
+    public ResponseEntity<String> approveParticipant(
+            @RequestParam("matchGroupId") Long matchGroupId,
+            @RequestParam("matchParticipantId") Long matchParticipantId,
+            @RequestParam("hostUsername") String hostUsername) {
+        matchParticipantService.approveParticipant(matchGroupId, matchParticipantId, hostUsername);
+        return ResponseEntity.ok("참가 승인 완료");
+    }
+
+    // 참가 신청 거절(방장)
+    @PostMapping("/reject")
+    public ResponseEntity<String> rejectParticipant(
+            @RequestParam("matchGroupId") Long matchGroupId,
+            @RequestParam("matchParticipantId") Long matchParticipantId,
+            @RequestParam("hostUsername") String hostUsername) {
+        matchParticipantService.rejectParticipant(matchGroupId, matchParticipantId, hostUsername);
+        return ResponseEntity.ok("참가 거절 완료");
+    }
+
+    // 특정 방의 참가 신청자 목록 조회(방장)
+    @GetMapping("/list/{matchGroupId}")
+    public ResponseEntity<List<MatchParticipantDTO>> getParticipantsByMatchGroupId(
+            @PathVariable("matchGroupId") Long matchGroupId) {
+        return ResponseEntity.ok(matchParticipantService.getParticipantsByMatchGroupId(matchGroupId));
+    }
+
+    // 특정 방의 참가자 목록 조회
+    @GetMapping("/accepted/{matchGroupId}")
+    public ResponseEntity<List<MatchParticipantDTO>> getAcceptedParticipants(
+            @PathVariable("matchGroupId") Long matchGroupId) {
+        return ResponseEntity.ok(matchParticipantService.getAcceptedParticipants(matchGroupId));
     }
 }
