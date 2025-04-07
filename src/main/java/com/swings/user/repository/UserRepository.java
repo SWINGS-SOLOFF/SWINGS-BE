@@ -6,6 +6,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByUsername(String username);  // ✅ 아이디 중복 확인을 위한 메서드
 
+    Optional<UserEntity> findByEmail(String email);  // ✅ 이메일 중복 확인을 위한 메서드
     //회원탈퇴를 위한 메서드
     void deleteByUsername(String username);
 

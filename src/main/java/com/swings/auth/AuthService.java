@@ -17,12 +17,21 @@ public class AuthService {
 
     public String login(String username, String password) {
 
-        // 🔹 유저 조회 & 비밀번호 검증 (보안 강화)
+        // 🔹 유저 조회
         UserEntity user = userRepository.findByUsername(username)
-                .filter(u -> passwordEncoder.matches(password, u.getPassword())) // 아이디 + 비밀번호 동시에 검증
-                .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 잘못되었습니다.")); // 보안 강화
+                .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 잘못되었습니다."));
 
-        // 🔹 JWT 생성 후 반환
+        // 🔹 비밀번호 검증
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("아이디 또는 비밀번호가 잘못되었습니다.");
+        }
+
+        // 🔐 이메일 인증 여부 확인
+        if (!user.isVerified()) {
+            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
+        }
+
+        // ✅ JWT 발급
         return jwtTokenProvider.generateToken(user.getUsername(), user.getRole());
     }
 }

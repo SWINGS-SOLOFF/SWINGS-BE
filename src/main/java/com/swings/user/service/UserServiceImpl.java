@@ -1,5 +1,6 @@
 package com.swings.user.service;
 
+import com.swings.email.service.EmailService;
 import com.swings.user.dto.UserDTO;
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
@@ -8,9 +9,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+import java.io.IOException;
+
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +24,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Override
     public boolean isUsernameExists(String username) {
@@ -51,9 +58,14 @@ public class UserServiceImpl implements UserService {
                 .userImg(dto.getUserImg())
                 .role(UserEntity.Role.fromString(dto.getRole()))
                 .activityRegion(UserEntity.ActivityRegion.fromString(dto.getActivityRegion()))
+                .isVerified(false) // 이메일 인증 (default 값은 인증X) 인증 후 로그인 가능
                 .build();
 
-        return userRepository.save(user);
+        UserEntity savedUser = userRepository.save(user);
+        emailService.sendEmailVerification(savedUser);
+        System.out.println("[✅ 이메일 인증 메일 전송됨]: " + user.getEmail());
+
+        return savedUser;
     }
 
     @Override
@@ -81,11 +93,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO convertToDto(UserEntity user) {
-
         UserDTO dto = new UserDTO();
         dto.setUserId(user.getUserId());
         dto.setUsername(user.getUsername());
-        dto.setPassword(null); // 보안상 비밀번호는 숨김
+        dto.setPassword(null);
         dto.setName(user.getName());
         dto.setBirthDate(user.getBirthDate() != null ? user.getBirthDate().toString() : "1900-01-01");
         dto.setPhonenumber(user.getPhonenumber() != null ? user.getPhonenumber() : "000-0000-0000");
@@ -98,13 +109,13 @@ public class UserServiceImpl implements UserService {
         dto.setSmoking(user.getSmoking() != null ? user.getSmoking().name() : "no");
         dto.setDrinking(user.getDrinking() != null ? user.getDrinking().name() : "no");
         dto.setIntroduce(user.getIntroduce() != null ? user.getIntroduce() : "");
-        dto.setUserImg(user.getUserImg()); // null 허용
+        dto.setUserImg(user.getUserImg());
         dto.setRole(user.getRole() != null ? user.getRole().name() : "player");
         dto.setGender(user.getGender() != null ? user.getGender().name() : "male");
         dto.setActivityRegion(user.getActivityRegion() != null ? user.getActivityRegion().name() : "SEOUL");
+        dto.setIsVerified(user.isVerified()); // ✅ 추가
         return dto;
     }
-
 
     @Override
     public UserEntity updateUser(String username, UserDTO dto) {
@@ -116,7 +127,6 @@ public class UserServiceImpl implements UserService {
                     .ifPresent(u -> {
                         throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
                     });
-
             user.setUsername(dto.getUsername());
         }
 
@@ -129,7 +139,6 @@ public class UserServiceImpl implements UserService {
         if (dto.getBirthDate() != null) {
             user.setBirthDate(LocalDate.parse(dto.getBirthDate()));
         }
-
         if (dto.getEmail() != null) user.setEmail(dto.getEmail());
         if (dto.getPhonenumber() != null) user.setPhonenumber(dto.getPhonenumber());
         if (dto.getJob() != null) user.setJob(dto.getJob());
@@ -145,8 +154,49 @@ public class UserServiceImpl implements UserService {
         if (dto.getGender() != null) user.setGender(UserEntity.Gender.fromString(dto.getGender()));
         if (dto.getActivityRegion() != null) user.setActivityRegion(UserEntity.ActivityRegion.fromString(dto.getActivityRegion()));
 
+        // ✅ 인증 상태 업데이트
+        if (dto.getIsVerified() != null) {
+            user.setVerified(dto.getIsVerified());
+        }
+
         return userRepository.save(user);
     }
+
+    @Override
+    public void updateProfileImage(MultipartFile image) {
+        UserEntity user = getCurrentUser(); // 현재 로그인한 사용자 가져오기
+
+        if (image != null && !image.isEmpty()) {
+            try {
+                // 파일 저장 경로 설정
+                String uploadDir = "C:/uploads/"; // 업로드 디렉토리
+                String originalFilename = image.getOriginalFilename();
+                String savedFilename = UUID.randomUUID() + "_" + originalFilename; // 고유한 파일명 생성
+                File dest = new File(uploadDir + savedFilename);
+
+                // 기존 프로필 이미지 삭제 (이전 이미지를 덮어쓸 때 삭제)
+                if (user.getUserImg() != null && !user.getUserImg().isEmpty()) {
+                    File oldImage = new File(uploadDir + user.getUserImg()); // 기존 파일 경로
+                    if (oldImage.exists()) {
+                        oldImage.delete(); // 이전 파일 삭제
+                    }
+                }
+
+                // 새로운 이미지 저장
+                image.transferTo(dest); // 파일을 디스크에 저장
+
+                // 사용자 엔티티 업데이트 (프로필 이미지 파일명 업데이트)
+                user.setUserImg(savedFilename); // DB에 새로운 파일명 저장
+                userRepository.save(user); // 사용자 정보 업데이트
+
+            } catch (IOException e) {
+                throw new RuntimeException("이미지 저장 실패: " + e.getMessage());
+            }
+        } else {
+            throw new IllegalArgumentException("이미지가 비어 있습니다.");
+        }
+    }
+
 
     @Override
     public void deleteCurrentUserWithPassword(String password) {
@@ -180,13 +230,12 @@ public class UserServiceImpl implements UserService {
                         return convertToDto(user);
                     } catch (Exception e) {
                         System.out.println("❌ DTO 변환 실패: userId=" + user.getUserId() + " → " + e.getMessage());
-                        return null; // 또는 throw 다시 던지기
+                        return null;
                     }
                 })
                 .filter(dto -> dto != null)
                 .toList();
     }
-
 
     @Override
     public void deleteUserByUsername(String username) {
@@ -200,4 +249,22 @@ public class UserServiceImpl implements UserService {
         user.setRole(UserEntity.Role.fromString(newRole));
         userRepository.save(user);
     }
+
+    //비밀번호 리셋
+    @Override
+    public void resetPassword(String username) {
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("가입된 아이디가 아닙니다."));
+
+        // ✅ 임시 비밀번호 생성 (8자리)
+        String tempPassword = UUID.randomUUID().toString().substring(0, 8);
+
+        // ✅ 비밀번호 암호화 후 저장
+        user.setPassword(passwordEncoder.encode(tempPassword));
+        userRepository.save(user);
+
+        // ✅ 이메일 전송
+        emailService.sendTemporaryPassword(user, tempPassword);
+    }
+
 }
