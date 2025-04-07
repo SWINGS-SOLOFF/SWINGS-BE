@@ -19,6 +19,7 @@ public class NotificationServiceImpl implements NotificationService {
     // 참가 신청 알림
     public void notifyHostOnJoinRequest(String groupName, String hostUsername, String applicantUsername) {
         NotificationDTO notification = NotificationDTO.builder()
+                .sender(applicantUsername)
                 .receiver(hostUsername)
                 .message(applicantUsername + " 님이 [" + groupName + "]에 참가를 신청했습니다.")
                 .type("JOIN_REQUEST")
@@ -48,4 +49,8 @@ public class NotificationServiceImpl implements NotificationService {
 
         sendNotification(notification);
     }
+
+    // 새로운 메세지
+
+
 }
