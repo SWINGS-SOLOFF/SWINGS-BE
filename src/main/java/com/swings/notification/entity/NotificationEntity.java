@@ -29,5 +29,4 @@ public class NotificationEntity {
 
     private boolean isRead;  // 읽음 여부
 
-
 }

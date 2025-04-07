@@ -28,6 +28,8 @@ public class MatchParticipantDTO {
     @JsonProperty("joinAt")
     private LocalDateTime joinAt;
 
+
+    // Entity → DTO 변환 메서드
     public static MatchParticipantDTO fromEntity(MatchParticipantEntity entity) {
         return MatchParticipantDTO.builder()
                 .matchParticipantId(entity.getMatchParticipantId())

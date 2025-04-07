@@ -78,5 +78,18 @@ public class NotificationServiceImpl implements NotificationService {
         return notificationRepository.findByReceiverOrderByCreatedAtDesc(receiver);
     }
 
+    // 알림 읽음 처리
+    public void markAsRead(Long notificationId) {
+        NotificationEntity notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("알림을 찾을 수 없습니다."));
+        notification.setRead(true);
+        notificationRepository.save(notification);
+    }
+
+    // 알림 삭제
+    @Override
+    public void deleteNotification(Long notificationId) {
+        notificationRepository.deleteById(notificationId);
+    }
 
 }

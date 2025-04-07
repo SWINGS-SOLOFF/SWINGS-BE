@@ -21,5 +21,11 @@ public interface NotificationService {
     
     // 알림 저장
     List<NotificationEntity> getNotificationsByReceiver(String receiver);
-    
+
+    // 알림 읽음 처리
+    void markAsRead(Long notificationId);
+
+    // 알림 삭제
+    void deleteNotification(Long notificationId);
+
 }
