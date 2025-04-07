@@ -27,5 +27,13 @@ public class ChatController {
     public List<ChatMessageEntity> getMessages(@PathVariable Long roomId) {
         return chatMessageService.getMessagesByRoomId(roomId);
     }
+    @PostMapping("/messages/read")
+    public ResponseEntity<Void> markMessagesAsRead(
+            @RequestParam Long roomId,
+            @RequestParam String username
+    ) {
+        chatMessageService.markMessagesAsRead(roomId, username);
+        return ResponseEntity.ok().build();
+    }
 
 }

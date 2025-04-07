@@ -1,10 +1,14 @@
 package com.swings.chat.controller;
 
 
+import com.swings.chat.dto.SentLikeDTO;
 import com.swings.chat.service.UserLikeService;
+import com.swings.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/likes")
@@ -12,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserLikeController {
 
     private final UserLikeService userLikeService;
+    private final UserService userService;
 
     // 좋아요 추가 API
     @PostMapping("/{fromUserId}/{toUserId}")
@@ -26,4 +31,13 @@ public class UserLikeController {
         boolean isMatched = userLikeService.isMatched(fromUserId, toUserId);
         return ResponseEntity.ok(isMatched);
     }
+
+    @GetMapping("/sent")
+    public ResponseEntity<List<SentLikeDTO>> getMySentLikes() {
+        String currentUsername = userService.getCurrentUser().getUsername();
+        System.out.println("✅ currentUsername: " + currentUsername); // 로그 찍기
+        List<SentLikeDTO> result = userLikeService.getSentLikesWithMutual(currentUsername);
+        return ResponseEntity.ok(result);
+    }
+
 }
