@@ -14,7 +14,8 @@ public class MailConfig {
     @Bean
     public JavaMailSender javaMailSender() {
         Dotenv dotenv = Dotenv.configure()
-                .directory("src/main/resources/config") // `.env` 위치 지정
+                .directory("config") // `.env` 위치 지정
+                .filename(".env")
                 .load();
 
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
