@@ -41,3 +41,9 @@ out/
 ###결제 관련
 **/toss-keys.txt
 **/jwt-secret.txt
+
+###이메일 인증 관련
+src/main/resources/config/.env
+**/.env
+**/oauth-client-id.txt
+src/main/resources/config/oauth-client-id.txt
