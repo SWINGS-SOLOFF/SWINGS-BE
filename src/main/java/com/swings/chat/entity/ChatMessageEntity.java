@@ -31,9 +31,15 @@ public class ChatMessageEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime sentAt; // 메시지 전송 시간
 
+    @Column(nullable = false)
+    private boolean isRead; // ✅ 읽었는지 여부 (기본값은 false)
+
+
     // ✅ 자동으로 현재 시간 설정
     @PrePersist
     protected void onCreate() {
         this.sentAt = LocalDateTime.now();
+        this.isRead = false; // 새 메시지는 기본적으로 읽지 않은 상태
+
     }
 }

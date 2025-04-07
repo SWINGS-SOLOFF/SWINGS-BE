@@ -52,5 +52,18 @@ public class ChatMessageService {
         return chatMessageRepository.findByChatRoom_RoomIdOrderBySentAtAsc(roomId);
     }
 
+    @Transactional
+    public void markMessagesAsRead(Long roomId, String username) {
+        List<ChatMessageEntity> unreadMessages = chatMessageRepository
+                .findByChatRoom_RoomIdAndSenderNotAndIsReadFalse(roomId, username);
+
+        for (ChatMessageEntity msg : unreadMessages) {
+            msg.setRead(true);
+        }
+
+        chatMessageRepository.saveAll(unreadMessages);
+    }
+
+
 
 }

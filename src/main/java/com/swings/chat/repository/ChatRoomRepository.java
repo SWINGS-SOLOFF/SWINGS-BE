@@ -14,6 +14,8 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long> 
     @Query("SELECT c FROM ChatRoomEntity c WHERE c.user1 = :userId OR c.user2 = :userId")
     List<ChatRoomEntity> findByUserId(@Param("userId") String userId);
 
+    List<ChatRoomEntity> findByUser1OrUser2(String user1, String user2);
+
     // 기존 코드 (채팅방 찾기)
     Optional<ChatRoomEntity> findByUser1AndUser2(String user1, String user2);
 }

@@ -9,15 +9,16 @@ import java.util.List;
 
 public interface UserLikeRepository extends JpaRepository<UserLikeEntity, Long> {
 
+    // 내가 특정 유저를 좋아했는지 여부 (좋아요 중복 방지용 등)
     boolean existsByFromUserIdAndToUserId(String fromUserId, String toUserId);
 
-    // 특정 유저가 좋아요를 누른 기록 조회
+    // 특정 유저가 좋아요를 누른 기록 (보낸 좋아요)
     List<UserLikeEntity> findByFromUserId(String fromUserId);
 
     // 특정 유저가 받은 좋아요 조회
     List<UserLikeEntity> findByToUserId(String toUserId);
 
-    // 두 유저가 서로 좋아요 했는지 확인 (매칭 여부)
+    // 두 유저가 서로 좋아요 했는지 확인 (쌍방 여부 체크)
     @Query("SELECT COUNT(u) FROM UserLikeEntity u WHERE " +
             "(u.fromUserId = :fromUserId AND u.toUserId = :toUserId) OR " +
             "(u.fromUserId = :toUserId AND u.toUserId = :fromUserId)")

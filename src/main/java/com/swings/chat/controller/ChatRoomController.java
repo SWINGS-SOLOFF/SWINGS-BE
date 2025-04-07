@@ -1,5 +1,6 @@
 package com.swings.chat.controller;
 
+import com.swings.chat.dto.ChatRoomResponseDto;
 import com.swings.chat.entity.ChatRoomEntity;
 import com.swings.chat.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
@@ -15,13 +16,14 @@ public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
 
-    // ✅ 1. 특정 유저가 속한 채팅방 목록 조회 API
+    // ✅ 1. 특정 유저가 속한 채팅방 목록 조회 API → Dto로 반환
     @GetMapping("/rooms")
-    public List<ChatRoomEntity> getRooms(@RequestParam String userId) {
-        return chatRoomService.getChatRoomsByUser(userId); // ✅ 자동으로 JSON으로 직렬화됨
+    public ResponseEntity<List<ChatRoomResponseDto>> getRooms(@RequestParam String userId) {
+        List<ChatRoomResponseDto> chatRooms = chatRoomService.getChatRoomsByUser(userId);
+        return ResponseEntity.ok(chatRooms);
     }
 
-    // 기존 코드 (채팅방 생성 API)
+    // ✅ 2. 채팅방 생성 or 조회 (기존 그대로 유지)
     @PostMapping("/room")
     public ResponseEntity<ChatRoomEntity> createOrGetChatRoom(@RequestParam String user1, @RequestParam String user2) {
         ChatRoomEntity chatRoom = chatRoomService.createOrGetChatRoom(user1, user2);
