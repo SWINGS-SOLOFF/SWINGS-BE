@@ -5,6 +5,8 @@ import com.swings.feed.dto.FeedDTO;
 import com.swings.feed.entity.FeedEntity;
 import com.swings.feed.repository.FeedRepository;
 import com.swings.feed.service.FeedService;
+import com.swings.social.dto.SocialDTO;
+import com.swings.social.service.SocialService;
 import com.swings.user.dto.UserDTO;
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
@@ -24,10 +26,12 @@ public class FeedServiceImpl implements FeedService {
 
     private final FeedRepository feedRepository;
     private final UserRepository userRepository;
+    private final SocialService socialService;
 
-    public FeedServiceImpl(FeedRepository feedRepository, UserRepository userRepository) {
+    public FeedServiceImpl(FeedRepository feedRepository, UserRepository userRepository, SocialService socialService) {
         this.feedRepository = feedRepository;
         this.userRepository = userRepository;
+        this.socialService = socialService;
     }
 
     @Override
@@ -169,4 +173,28 @@ public class FeedServiceImpl implements FeedService {
                         .collect(Collectors.toList()) : List.of())
                 .build();
     }
+
+    @Override
+    public List<Long> getFolloweeIds(Long userId) {
+        List<Long> followeeIds = socialService.getFollowing(userId).stream()
+            .map(SocialDTO::getFollowee)
+            .map(UserDTO::getUserId)
+            .collect(Collectors.toList());
+
+        if (!followeeIds.contains(userId)) {
+            followeeIds.add(userId);
+        }
+
+        return followeeIds;
+    }
+
+    @Override
+    public List<FeedDTO> getFeedsByUserList(List<Long> userIds, Pageable pageable) {
+        return feedRepository.findByUser_UserIdIn(userIds, pageable)
+                .getContent()
+                .stream()
+                .map(this::feedEntityToDTO) 
+                .collect(Collectors.toList());
+    }
+    
 }

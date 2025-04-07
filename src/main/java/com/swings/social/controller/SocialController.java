@@ -4,6 +4,7 @@ import com.swings.feed.dto.FeedDTO;
 import com.swings.feed.service.FeedService;
 import com.swings.social.dto.SocialDTO;
 import com.swings.social.service.SocialService;
+import com.swings.user.dto.UserDTO;
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -104,13 +105,37 @@ public class SocialController {
 
     // 특정 사용자 정보 조회 (ID 기반)
     @GetMapping("/user/{userId}")
-    public ResponseEntity<UserEntity> getUserById(@PathVariable Long userId) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long userId) {
         UserEntity user = userRepository.findById(userId).orElse(null);
         if (user != null) {
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok(convertToDTO(user));
         } else {
             return ResponseEntity.notFound().build();
         }
     }
+    
+    private UserDTO convertToDTO(UserEntity user) {
+        return UserDTO.builder()
+                .userId(user.getUserId())
+                .username(user.getUsername())
+                .name(user.getName())
+                .birthDate(user.getBirthDate().toString())
+                .phonenumber(user.getPhonenumber())
+                .email(user.getEmail())
+                .job(user.getJob())
+                .golfSkill(user.getGolfSkill().name())
+                .mbti(user.getMbti())
+                .hobbies(user.getHobbies())
+                .religion(user.getReligion())
+                .smoking(user.getSmoking().name())
+                .drinking(user.getDrinking().name())
+                .introduce(user.getIntroduce())
+                .userImg(user.getUserImg())
+                .role(user.getRole().name())
+                .gender(user.getGender().name())
+                .activityRegion(user.getActivityRegion().name())
+                .build();
+    }
+    
 
 }
