@@ -71,6 +71,33 @@ public class FeedController {
 
         return ResponseEntity.ok(feeds != null ? feeds : List.of());
     }
+    
+    // 팔로우한 유저이거나 전체 유저 피드 보기
+    @GetMapping("/filtered")
+    public ResponseEntity<List<FeedDTO>> getFilteredFeeds(
+        @RequestParam Long userId,
+        @RequestParam int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "latest") String sort,
+        @RequestParam(defaultValue = "all") String filter
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        List<FeedDTO> feeds;
+
+        if (filter.equals("followings")) {
+            List<Long> followeeIds = feedService.getFolloweeIds(userId);
+            feeds = feedService.getFeedsByUserList(followeeIds, pageable);
+        } else {
+            feeds = feedService.getAllFeeds(pageable);
+        }
+
+        if (sort.equals("random")) {
+            Collections.shuffle(feeds);
+        }
+
+        return ResponseEntity.ok(feeds);
+    }
 
     // 특정 유저의 피드만 조회
     @GetMapping("/user/{userId}")
@@ -105,24 +132,29 @@ public class FeedController {
     // 파일 업로드와 함께 피드 생성 (DTO 사용)
     @PostMapping("/upload")
     public ResponseEntity<FeedDTO> uploadFeed(
-            @RequestParam("userId") Long userId,
-            @RequestParam("content") String content,
-            @RequestParam("file") MultipartFile file
+        @RequestParam("userId") Long userId,
+        @RequestParam("content") String content,
+        @RequestPart(value = "file", required = false) MultipartFile file
     ) {
-        String savedUrl = saveFile(file);
+        String savedUrl = null;
+
+                if (file != null && !file.isEmpty()) {
+            savedUrl = saveFile(file);
+        }
+
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
-        // DTO로 피드 정보 구성 (필요한 최소 정보만 설정)
         FeedDTO feedDTO = FeedDTO.builder()
                 .userId(user.getUserId())
                 .caption(content)
-                .imageUrl(savedUrl)
+                .imageUrl(savedUrl) // null 가능
                 .build();
 
         FeedDTO createdFeedDTO = feedService.createFeed(feedDTO);
         return ResponseEntity.ok(createdFeedDTO);
     }
+
 
     // 파일 저장 메소드 (로컬 디스크에 저장)
     private String saveFile(MultipartFile file) {
@@ -259,7 +291,5 @@ public class FeedController {
 
         return feedDTO;
     }
-
-
 
 }

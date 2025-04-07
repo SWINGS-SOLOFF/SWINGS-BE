@@ -27,7 +27,7 @@ public class FeedEntity {
     @JoinColumn(name = "userId", nullable = false)
     private UserEntity user;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String imageUrl;
 
     @Column(columnDefinition = "TEXT")
