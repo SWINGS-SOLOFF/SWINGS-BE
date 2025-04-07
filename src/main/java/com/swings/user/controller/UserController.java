@@ -9,10 +9,16 @@ import com.swings.user.repository.UserRepository;
 import com.swings.user.service.UserPointService;
 import com.swings.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +74,25 @@ public class UserController {
             return ResponseEntity.ok("프로필 이미지가 변경되었습니다.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("이미지 업데이트 실패: " + e.getMessage());
+        }
+    }
+
+    //프로필 이미지 조회
+    @GetMapping("/me/profile-image/{filename}")
+    public ResponseEntity<Resource> getProfileImage(@PathVariable String filename) {
+        try {
+            Path path = Paths.get("C:/uploads/").resolve(filename);
+            Resource resource = new UrlResource(path.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_JPEG_VALUE)
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 
