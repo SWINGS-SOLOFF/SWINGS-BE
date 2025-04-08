@@ -29,7 +29,8 @@ public class UserRecommendServiceImpl implements UserRecommendService {
                         user.getName(),
                         user.getGender().name(),
                         user.getUserImg(),
-                        user.getIntroduce()
+                        user.getIntroduce(),
+                        user.getActivityRegion().name()
                 ))
                 .orElseThrow(() -> new RuntimeException("추천할 사용자가 없습니다."));
     }
@@ -49,7 +50,8 @@ public class UserRecommendServiceImpl implements UserRecommendService {
                         user.getName(),
                         user.getGender().name(),
                         user.getUserImg(),
-                        user.getIntroduce()
+                        user.getIntroduce(),
+                        user.getActivityRegion().name()
                 ))
                 .orElseThrow(() -> new RuntimeException("추천할 사용자가 없습니다."));
     }
