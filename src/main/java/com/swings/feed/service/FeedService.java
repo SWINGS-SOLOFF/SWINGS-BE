@@ -21,4 +21,5 @@ public interface FeedService {
     List<FeedDTO> getFeedsRandomized(Long userId, Pageable pageable);
     List<Long> getFolloweeIds(Long userId);
     List<FeedDTO> getFeedsByUserList(List<Long> userIds, Pageable pageable);
+    List<FeedDTO> getFeedsByUserListExcludingSelf(List<Long> userIds, Pageable pageable, Long currentUserId);
 }

@@ -82,18 +82,20 @@ public class FeedController {
         @RequestParam(defaultValue = "all") String filter
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-
         List<FeedDTO> feeds;
 
         if (filter.equals("followings")) {
             List<Long> followeeIds = feedService.getFolloweeIds(userId);
-            feeds = feedService.getFeedsByUserList(followeeIds, pageable);
+            System.out.println("✅ userId: " + userId + "의 팔로우 대상: " + followeeIds);
+            feeds = feedService.getFeedsByUserListExcludingSelf(followeeIds, pageable, userId); // 🔥 변경된 부분
         } else {
-            feeds = feedService.getAllFeeds(pageable);
-        }
-
-        if (sort.equals("random")) {
-            Collections.shuffle(feeds);
+            feeds = feedService.getAllFeeds(pageable)
+                    .stream()
+                    .filter(feed -> !feed.getUserId().equals(userId))
+                    .collect(Collectors.toList());
+            if (sort.equals("random")) {
+                Collections.shuffle(feeds);
+            }
         }
 
         return ResponseEntity.ok(feeds);
