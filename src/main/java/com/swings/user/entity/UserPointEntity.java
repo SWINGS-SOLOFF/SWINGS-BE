@@ -2,6 +2,7 @@ package com.swings.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -27,6 +28,9 @@ public class UserPointEntity {
     private PointType type; // 충전, 사용, 취소, 관리자 임의 충전(etc 초대)
 
     private String description; //사용 상세 내역
+
+    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public enum PointType {

@@ -14,7 +14,7 @@ public class UserSelectDTO {
     private String gender;
     private String userImg;
     private String introduce;
-
+    private String activityRegion;
 
 
 }

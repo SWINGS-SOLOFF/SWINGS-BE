@@ -38,21 +38,22 @@ public class FeedServiceImpl implements FeedService {
     public FeedDTO createFeed(FeedDTO feedDTO) {
         FeedEntity feedEntity = feedDTOToEntity(feedDTO);
         FeedEntity savedFeed = feedRepository.save(feedEntity);
-        return feedEntityToDTO(savedFeed);
+        return feedEntityToDTO(savedFeed, feedDTO.getUserId()); // 생성자 기준 liked 반영
     }
 
     @Override
     public List<FeedDTO> getAllFeeds(Pageable pageable) {
         Page<FeedEntity> feedPage = feedRepository.findAll(pageable);
         return feedPage.stream()
-                .map(this::feedEntityToDTO)
+                .map(feed -> feedEntityToDTO(feed, null))
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
     public Optional<FeedDTO> getFeedById(Long feedId) {
-        return feedRepository.findById(feedId).map(this::feedEntityToDTO);
+        return feedRepository.findById(feedId)
+                .map(feed -> feedEntityToDTO(feed, null));
     }
 
     @Override
@@ -61,7 +62,7 @@ public class FeedServiceImpl implements FeedService {
             feed.setCaption(updatedFeedDTO.getCaption());
             feed.setImageUrl(updatedFeedDTO.getImageUrl());
             FeedEntity updatedFeed = feedRepository.save(feed);
-            return feedEntityToDTO(updatedFeed);
+            return feedEntityToDTO(updatedFeed, updatedFeedDTO.getUserId());
         }).orElseThrow(() -> new RuntimeException("Feed not found with id: " + feedId));
     }
 
@@ -84,7 +85,7 @@ public class FeedServiceImpl implements FeedService {
         }
 
         FeedEntity updatedFeed = feedRepository.save(feed);
-        return new FeedDTO(updatedFeed, true);
+        return feedEntityToDTO(updatedFeed, userId);
     }
 
     @Override
@@ -101,7 +102,7 @@ public class FeedServiceImpl implements FeedService {
         }
 
         FeedEntity updatedFeed = feedRepository.save(feed);
-        return new FeedDTO(updatedFeed, false);
+        return feedEntityToDTO(updatedFeed, userId);
     }
 
     @Override
@@ -116,7 +117,9 @@ public class FeedServiceImpl implements FeedService {
     @Transactional
     public List<FeedDTO> getFeedsByUserId(Long userId) {
         List<FeedEntity> feeds = feedRepository.findByUserUserIdOrderByCreatedAtDesc(userId);
-        return feeds.stream().map(this::feedEntityToDTO).collect(Collectors.toList());
+        return feeds.stream()
+                .map(feed -> feedEntityToDTO(feed, userId))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -138,7 +141,63 @@ public class FeedServiceImpl implements FeedService {
         Page<FeedEntity> feedPage = feedRepository.findByUser_UserIdOrderByCreatedAtDesc(userId, pageable);
         List<FeedEntity> feeds = new ArrayList<>(feedPage.getContent());
         Collections.shuffle(feeds);
-        return feeds.stream().map(this::feedEntityToDTO).collect(Collectors.toList());
+        return feeds.stream()
+                .map(feed -> feedEntityToDTO(feed, userId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FeedDTO> getFeedsByUserList(List<Long> userIds, Pageable pageable) {
+        return feedRepository.findByUser_UserIdIn(userIds, pageable)
+                .getContent()
+                .stream()
+                .map(feed -> feedEntityToDTO(feed, null))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FeedDTO> getFeedsByUserListExcludingSelf(List<Long> userIds, Pageable pageable, Long currentUserId) {
+        return feedRepository.findByUser_UserIdIn(userIds, pageable)
+                .getContent()
+                .stream()
+                .filter(feed -> !feed.getUser().getUserId().equals(currentUserId))
+                .map(feed -> feedEntityToDTO(feed, currentUserId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Long> getFolloweeIds(Long userId) {
+        return socialService.getFollowing(userId).stream()
+                .map(SocialDTO::getFollowee)
+                .map(UserDTO::getUserId)
+                .collect(Collectors.toList());
+    }
+
+    private FeedDTO feedEntityToDTO(FeedEntity feedEntity, Long currentUserId) {
+        boolean liked = false;
+        if (currentUserId != null) {
+            liked = feedEntity.getLikedUsers().stream()
+                    .anyMatch(user -> user.getUserId().equals(currentUserId));
+        }
+
+        return FeedDTO.builder()
+                .feedId(feedEntity.getFeedId())
+                .userId(feedEntity.getUser().getUserId())
+                .username(feedEntity.getUser().getUsername())
+                .imageUrl(feedEntity.getImageUrl())
+                .caption(feedEntity.getCaption())
+                .createdAt(feedEntity.getCreatedAt())
+                .likes(feedEntity.getLikes())
+                .liked(liked)
+                .comments(feedEntity.getComments() != null ? feedEntity.getComments().stream()
+                        .map(commentEntity -> new CommentDTO(
+                                commentEntity.getCommentId(),
+                                commentEntity.getUser() != null ? commentEntity.getUser().getUserId() : null,
+                                commentEntity.getUser() != null ? commentEntity.getUser().getUsername() : "Unknown User",
+                                commentEntity.getContent(),
+                                commentEntity.getCreatedAt()))
+                        .collect(Collectors.toList()) : List.of())
+                .build();
     }
 
     private FeedEntity feedDTOToEntity(FeedDTO feedDTO) {
@@ -152,49 +211,4 @@ public class FeedServiceImpl implements FeedService {
         feedEntity.setCreatedAt(feedDTO.getCreatedAt());
         return feedEntity;
     }
-
-    private FeedDTO feedEntityToDTO(FeedEntity feedEntity) {
-        return FeedDTO.builder()
-                .feedId(feedEntity.getFeedId())
-                .userId(feedEntity.getUser().getUserId())
-                .username(feedEntity.getUser().getUsername())
-                .imageUrl(feedEntity.getImageUrl())
-                .caption(feedEntity.getCaption())
-                .createdAt(feedEntity.getCreatedAt())
-                .likes(feedEntity.getLikes())
-                .liked(false)
-                .comments(feedEntity.getComments() != null ? feedEntity.getComments().stream()
-                        .map(commentEntity -> new CommentDTO(
-                                commentEntity.getCommentId(),
-                                commentEntity.getUser() != null ? commentEntity.getUser().getUserId() : null,
-                                commentEntity.getUser() != null ? commentEntity.getUser().getUsername() : "Unknown User",
-                                commentEntity.getContent(),
-                                commentEntity.getCreatedAt()))
-                        .collect(Collectors.toList()) : List.of())
-                .build();
-    }
-
-    @Override
-    public List<Long> getFolloweeIds(Long userId) {
-        List<Long> followeeIds = socialService.getFollowing(userId).stream()
-            .map(SocialDTO::getFollowee)
-            .map(UserDTO::getUserId)
-            .collect(Collectors.toList());
-
-        if (!followeeIds.contains(userId)) {
-            followeeIds.add(userId);
-        }
-
-        return followeeIds;
-    }
-
-    @Override
-    public List<FeedDTO> getFeedsByUserList(List<Long> userIds, Pageable pageable) {
-        return feedRepository.findByUser_UserIdIn(userIds, pageable)
-                .getContent()
-                .stream()
-                .map(this::feedEntityToDTO) 
-                .collect(Collectors.toList());
-    }
-    
 }
