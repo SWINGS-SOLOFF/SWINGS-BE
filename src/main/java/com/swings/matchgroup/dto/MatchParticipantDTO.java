@@ -19,6 +19,9 @@ public class MatchParticipantDTO {
     @JsonProperty("matchGroupId")
     private Long matchGroupId;
 
+    @JsonProperty("hostId")
+    private Long hostId;
+
     @JsonProperty("userId")
     private Long userId;
 

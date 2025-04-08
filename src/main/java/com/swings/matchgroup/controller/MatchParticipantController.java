@@ -17,43 +17,64 @@ public class MatchParticipantController {
 
     // 참가 신청
     @PostMapping("/join")
-    public ResponseEntity<MatchParticipantDTO> joinMatch(
-            @RequestParam("matchGroupId") Long matchGroupId,
-            @RequestParam("username") String username) {
-        return ResponseEntity.ok(matchParticipantService.joinMatch(matchGroupId, username));
+    public ResponseEntity<MatchParticipantDTO> joinMatch(@RequestBody MatchParticipantDTO dto) {
+        return ResponseEntity.ok(
+                matchParticipantService.joinMatch(dto.getMatchGroupId(), dto.getUserId())
+        );
+    }
+
+    // 참가 신청 취소
+    @PostMapping("/leave")
+    public ResponseEntity<String> leaveMatch(@RequestBody MatchParticipantDTO dto) {
+        matchParticipantService.leaveMatch(dto.getMatchGroupId(), dto.getUserId());
+        return ResponseEntity.ok("참가 취소 완료");
     }
 
     // 참가 신청 승인(방장)
     @PostMapping("/approve")
-    public ResponseEntity<String> approveParticipant(
-            @RequestParam("matchGroupId") Long matchGroupId,
-            @RequestParam("matchParticipantId") Long matchParticipantId,
-            @RequestParam("hostUsername") String hostUsername) {
-        matchParticipantService.approveParticipant(matchGroupId, matchParticipantId, hostUsername);
+    public ResponseEntity<String> approveParticipant(@RequestBody MatchParticipantDTO dto) {
+        matchParticipantService.approveParticipant(
+                dto.getMatchGroupId(),
+                dto.getMatchParticipantId(),
+                dto.getUserId()
+        );
         return ResponseEntity.ok("참가 승인 완료");
     }
 
     // 참가 신청 거절(방장)
     @PostMapping("/reject")
-    public ResponseEntity<String> rejectParticipant(
-            @RequestParam("matchGroupId") Long matchGroupId,
-            @RequestParam("matchParticipantId") Long matchParticipantId,
-            @RequestParam("hostUsername") String hostUsername) {
-        matchParticipantService.rejectParticipant(matchGroupId, matchParticipantId, hostUsername);
+    public ResponseEntity<String> rejectParticipant(@RequestBody MatchParticipantDTO dto) {
+        matchParticipantService.rejectParticipant(
+                dto.getMatchGroupId(),
+                dto.getMatchParticipantId(),
+                dto.getUserId()
+        );
         return ResponseEntity.ok("참가 거절 완료");
+    }
+
+    // 참가자 강퇴
+    @DeleteMapping("/remove")
+    public ResponseEntity<String> removeParticipant(@RequestBody MatchParticipantDTO dto) {
+        matchParticipantService.removeParticipant(dto.getMatchGroupId(), dto.getUserId(), dto.getHostId());
+        return ResponseEntity.ok("강퇴 완료");
     }
 
     // 특정 방의 참가 신청자 목록 조회(방장)
     @GetMapping("/list/{matchGroupId}")
     public ResponseEntity<List<MatchParticipantDTO>> getParticipantsByMatchGroupId(
             @PathVariable("matchGroupId") Long matchGroupId) {
-        return ResponseEntity.ok(matchParticipantService.getParticipantsByMatchGroupId(matchGroupId));
+        return ResponseEntity.ok(
+                matchParticipantService.getParticipantsByMatchGroupId(matchGroupId)
+        );
     }
 
     // 특정 방의 참가자 목록 조회
     @GetMapping("/accepted/{matchGroupId}")
     public ResponseEntity<List<MatchParticipantDTO>> getAcceptedParticipants(
             @PathVariable("matchGroupId") Long matchGroupId) {
-        return ResponseEntity.ok(matchParticipantService.getAcceptedParticipants(matchGroupId));
+        return ResponseEntity.ok(
+                matchParticipantService.getAcceptedParticipants(matchGroupId)
+        );
     }
+
 }
