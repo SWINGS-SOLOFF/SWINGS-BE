@@ -1,7 +1,7 @@
 package com.swings.feed.controller;
 
-import com.swings.feed.dto.FeedDTO;
 import com.swings.feed.dto.CommentDTO;
+import com.swings.feed.dto.FeedDTO;
 import com.swings.feed.entity.CommentEntity;
 import com.swings.feed.entity.FeedEntity;
 import com.swings.feed.repository.FeedRepository;
@@ -13,20 +13,16 @@ import com.swings.user.repository.UserRepository;
 import lombok.Getter;
 import lombok.Setter;
 import net.coobird.thumbnailator.Thumbnails;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:5173")
@@ -39,76 +35,100 @@ public class FeedController {
     private final CommentService commentService;
     private final FeedRepository feedRepository;
 
-    public FeedController(FeedService feedService, UserRepository userRepository, CommentService commentService, FeedRepository feedRepository) {
+    public FeedController(FeedService feedService, UserRepository userRepository,
+                          CommentService commentService, FeedRepository feedRepository) {
         this.feedService = feedService;
         this.userRepository = userRepository;
         this.commentService = commentService;
         this.feedRepository = feedRepository;
     }
 
-    // 피드 생성 (DTO 사용)
     @PostMapping
     public ResponseEntity<FeedDTO> createFeed(@RequestBody FeedDTO feedDTO) {
-        FeedDTO createdFeedDTO = feedService.createFeed(feedDTO);
-        return ResponseEntity.ok(createdFeedDTO);
+        return ResponseEntity.ok(feedService.createFeed(feedDTO));
     }
 
-    // 전체 피드 조회 (DTO 리스트 반환)
     @GetMapping
-    public ResponseEntity<List<FeedDTO>> getFeeds(
-            @RequestParam(required = false) Long userId, 
-            @RequestParam int page,
-            @RequestParam(defaultValue = "10") int size) {
-
+    public ResponseEntity<List<FeedDTO>> getFeeds(@RequestParam(required = false) Long userId,
+                                                  @RequestParam int page,
+                                                  @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        List<FeedDTO> feeds;
-        
-        if (userId == null) {
-            feeds = feedService.getAllFeeds(pageable);
-        } else {
-            feeds = feedService.getFeedsRandomized(userId, pageable);
-        }
-
-        return ResponseEntity.ok(feeds != null ? feeds : List.of());
+        List<FeedDTO> feeds = (userId == null)
+                ? feedService.getAllFeeds(pageable)
+                : feedService.getFeedsRandomized(userId, pageable);
+        return ResponseEntity.ok(feeds);
     }
-    
-    // 팔로우한 유저이거나 전체 유저 피드 보기
+
     @GetMapping("/filtered")
     public ResponseEntity<List<FeedDTO>> getFilteredFeeds(
-        @RequestParam Long userId,
-        @RequestParam int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "latest") String sort,
-        @RequestParam(defaultValue = "all") String filter
-    ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        List<FeedDTO> feeds;
+            @RequestParam Long userId,
+            @RequestParam int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "latest") String sort,
+            @RequestParam(defaultValue = "all") String filter) {
 
-        if (filter.equals("followings")) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        List<FeedDTO> feeds = new ArrayList<>();
+
+        if ("followings".equals(filter)) {
             List<Long> followeeIds = feedService.getFolloweeIds(userId);
-            System.out.println("✅ userId: " + userId + "의 팔로우 대상: " + followeeIds);
-            feeds = feedService.getFeedsByUserListExcludingSelf(followeeIds, pageable, userId); // 🔥 변경된 부분
+
+            if (!followeeIds.isEmpty()) {
+                feeds = feedService.getFeedsByUserListExcludingSelf(followeeIds, pageable, userId);
+            } else {
+                feeds = feedService.getAllFeeds(pageable).stream()
+                        .filter(feed -> !feed.getUserId().equals(userId))
+                        .collect(Collectors.toList());
+
+                if ("random".equals(sort)) {
+                    Collections.shuffle(feeds);
+                }
+            }
         } else {
-            feeds = feedService.getAllFeeds(pageable)
-                    .stream()
+            feeds = feedService.getAllFeeds(pageable).stream()
                     .filter(feed -> !feed.getUserId().equals(userId))
                     .collect(Collectors.toList());
-            if (sort.equals("random")) {
+
+            if ("random".equals(sort)) {
                 Collections.shuffle(feeds);
             }
         }
 
         return ResponseEntity.ok(feeds);
     }
+    
+    @GetMapping("/main")
+    public ResponseEntity<List<FeedDTO>> getMainFeed(@RequestParam Long userId) {
+        Pageable pageable = PageRequest.of(0, 30, Sort.by("createdAt").descending());
 
-    // 특정 유저의 피드만 조회
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<FeedDTO>> getFeedsByUserId(@PathVariable Long userId) {
-        List<FeedDTO> feedDTOs = feedService.getFeedsByUserId(userId);
-        return ResponseEntity.ok(feedDTOs);
+        List<FeedDTO> result = new ArrayList<>();
+
+        // 1. 팔로우한 유저 피드 최신순
+        List<Long> followeeIds = feedService.getFolloweeIds(userId);
+        if (!followeeIds.isEmpty()) {
+            List<FeedDTO> followFeeds = feedService.getFeedsByUserListExcludingSelf(followeeIds, pageable, userId);
+            result.addAll(followFeeds);
+        }
+
+        // 2. 전체 랜덤 피드 (팔로우, 본인 제외)
+        List<FeedDTO> latestFeeds = feedService.getAllFeeds(pageable).stream()
+                .filter(feed -> !feed.getUserId().equals(userId) && !followeeIds.contains(feed.getUserId()))
+                .collect(Collectors.toList());
+
+        result.addAll(latestFeeds);
+
+        // 3. 본인 피드
+        List<FeedDTO> myFeeds = feedService.getFeedsByUserId(userId);
+        result.addAll(myFeeds);
+
+        return ResponseEntity.ok(result);
     }
 
-    // 특정 피드 조회
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<FeedDTO>> getFeedsByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(feedService.getFeedsByUserId(userId));
+    }
+
     @GetMapping("/{feedId}")
     public ResponseEntity<FeedDTO> getFeedById(@PathVariable Long feedId) {
         return feedService.getFeedById(feedId)
@@ -116,182 +136,98 @@ public class FeedController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 피드 수정
     @PutMapping("/{feedId}")
     public ResponseEntity<FeedDTO> updateFeed(@PathVariable Long feedId,
                                               @RequestBody FeedDTO updatedFeedDTO) {
-        FeedDTO updatedFeed = feedService.updateFeed(feedId, updatedFeedDTO);
-        return ResponseEntity.ok(updatedFeed);
+        return ResponseEntity.ok(feedService.updateFeed(feedId, updatedFeedDTO));
     }
 
-    // 피드 삭제
     @DeleteMapping("/{feedId}")
     public ResponseEntity<Void> deleteFeed(@PathVariable Long feedId) {
         feedService.deleteFeed(feedId);
         return ResponseEntity.noContent().build();
     }
 
-    // 파일 업로드와 함께 피드 생성 (DTO 사용)
     @PostMapping("/upload")
-    public ResponseEntity<FeedDTO> uploadFeed(
-        @RequestParam("userId") Long userId,
-        @RequestParam("content") String content,
-        @RequestPart(value = "file", required = false) MultipartFile file
-    ) {
-        String savedUrl = null;
-
-                if (file != null && !file.isEmpty()) {
-            savedUrl = saveFile(file);
-        }
-
+    public ResponseEntity<FeedDTO> uploadFeed(@RequestParam("userId") Long userId,
+                                              @RequestParam("content") String content,
+                                              @RequestPart(value = "file", required = false) MultipartFile file) {
+        String imageUrl = (file != null && !file.isEmpty()) ? saveFile(file) : null;
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
         FeedDTO feedDTO = FeedDTO.builder()
                 .userId(user.getUserId())
                 .caption(content)
-                .imageUrl(savedUrl) // null 가능
+                .imageUrl(imageUrl)
                 .build();
 
-        FeedDTO createdFeedDTO = feedService.createFeed(feedDTO);
-        return ResponseEntity.ok(createdFeedDTO);
+        return ResponseEntity.ok(feedService.createFeed(feedDTO));
     }
 
-
-    // 파일 저장 메소드 (로컬 디스크에 저장)
     private String saveFile(MultipartFile file) {
         String uploadDir = "C:/uploads/";
-        String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         String filePath = uploadDir + fileName;
         try {
-            // 리사이즈 처리 (최대 너비 800px, 최대 높이 600px)
-            File destFile = new File(filePath);
-            Thumbnails.of(file.getInputStream())
-                    .size(800, 600)  // 크기 지정
-                    .toFile(destFile);
+            File dest = new File(filePath);
+            Thumbnails.of(file.getInputStream()).size(800, 600).toFile(dest);
             return "http://localhost:8090/swings/uploads/" + fileName;
         } catch (IOException e) {
             throw new RuntimeException("File upload failed: " + e.getMessage());
         }
     }
 
-    // 좋아요 증가
     @PutMapping("/{feedId}/like")
     public ResponseEntity<FeedDTO> likeFeed(@PathVariable Long feedId, @RequestParam Long userId) {
-        FeedDTO updatedFeedDTO = feedService.likeFeed(feedId, userId);
-        return ResponseEntity.ok(updatedFeedDTO);
+        return ResponseEntity.ok(feedService.likeFeed(feedId, userId));
     }
 
-    // 좋아요 취소
     @PutMapping("/{feedId}/unlike")
-    public ResponseEntity<?> unlikeFeed(@PathVariable Long feedId, @RequestParam Long userId) {
-        if (feedId == null || userId == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Feed ID or User ID cannot be null");
-        }
-
-        feedService.unlikeFeed(feedId, userId);
-        return ResponseEntity.ok("Feed unliked successfully");
+    public ResponseEntity<FeedDTO> unlikeFeed(@PathVariable Long feedId, @RequestParam Long userId) {
+        if (feedId == null || userId == null) return ResponseEntity.badRequest().build();
+        FeedDTO updatedFeed = feedService.unlikeFeed(feedId, userId);
+        return ResponseEntity.ok(updatedFeed);
     }
 
-    // 댓글 추가
     @PostMapping("/{feedId}/comments")
     public ResponseEntity<CommentDTO> addComment(@PathVariable Long feedId,
                                                  @RequestParam Long userId,
                                                  @RequestParam String content) {
-        // commentService.addComment는 CommentEntity를 반환하므로 변환
         CommentEntity comment = commentService.addComment(feedId, userId, content);
-        CommentDTO commentDTO = commentEntityToDTO(comment);
-        return ResponseEntity.ok(commentDTO);
+        return ResponseEntity.ok(convertToDTO(comment));
     }
 
-    // 댓글 삭제
     @DeleteMapping("/{feedId}/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(@PathVariable Long feedId, @PathVariable Long commentId) {
         commentService.deleteComment(commentId);
         return ResponseEntity.noContent().build();
     }
 
-    // 특정 피드의 댓글 조회
     @GetMapping("/{feedId}/comments")
-    public ResponseEntity<?> getCommentsByFeedId(@PathVariable Long feedId) {
-        try {
-            List<CommentEntity> comments = commentService.getCommentsByFeedId(feedId);
-
-            // 댓글이 없을 경우 빈 리스트 반환
-            if (comments == null || comments.isEmpty()) {
-                return ResponseEntity.ok(List.of());  // 빈 리스트 반환
-            }
-
-            // Entity -> DTO 변환
-            List<CommentDTO> commentDTOs = comments.stream()
-                    .map(this::commentEntityToDTO)
-                    .collect(Collectors.toList());
-
-            return ResponseEntity.ok(commentDTOs);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body("서버 내부 오류 발생: " + e.getMessage());
-        }
-    }
-
-    // CommentEntity -> CommentDTO 변환 메소드
-    private CommentDTO commentEntityToDTO(CommentEntity commentEntity) {
-        return CommentDTO.builder()
-                .commentId(commentEntity.getCommentId())
-                .userId(commentEntity.getUser() != null ? commentEntity.getUser().getUserId() : null)
-                .username(commentEntity.getUser() != null ? commentEntity.getUser().getUsername() : "Unknown User")
-                .content(commentEntity.getContent())
-                .createdAt(commentEntity.getCreatedAt())
-                .build();
-    }
-
-    // 특정 사용자 정보 조회 (ID 기반)
-    public UserEntity getUserById(Long userId) {
-        return userRepository.findById(userId).orElse(null);
+    public ResponseEntity<List<CommentDTO>> getCommentsByFeedId(@PathVariable Long feedId) {
+        List<CommentEntity> comments = commentService.getCommentsByFeedId(feedId);
+        List<CommentDTO> commentDTOs = comments.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return ResponseEntity.ok(commentDTOs);
     }
 
     @GetMapping("/{feedId}/liked-users")
     public ResponseEntity<List<UserDTO>> getLikedUsers(@PathVariable Long feedId) {
-        List<UserDTO> likedUsers = feedService.getLikedUsers(feedId);
-        return ResponseEntity.ok(likedUsers);
+        return ResponseEntity.ok(feedService.getLikedUsers(feedId));
     }
 
-    // UserIdRequest 클래스 정의
-    @Setter
-    @Getter
-    public class UserIdRequest {
+    private CommentDTO convertToDTO(CommentEntity comment) {
+        return CommentDTO.builder()
+                .commentId(comment.getCommentId())
+                .userId(comment.getUser() != null ? comment.getUser().getUserId() : null)
+                .username(comment.getUser() != null ? comment.getUser().getUsername() : "Unknown User")
+                .content(comment.getContent())
+                .createdAt(comment.getCreatedAt())
+                .build();
+    }
+
+    @Getter @Setter
+    public static class UserIdRequest {
         private Long userId;
-
     }
-
-    @GetMapping("/feeds/randomized")
-    public ResponseEntity<List<FeedDTO>> getFeedsRandomized(
-            @RequestParam Long userId,
-            @RequestParam int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<FeedEntity> feedPage = feedRepository.findByUser_UserIdOrderByCreatedAtDesc(userId, pageable);
-        List<FeedEntity> feeds = new ArrayList<>(feedPage.getContent());
-        Collections.shuffle(feeds);
-
-        List<FeedDTO> feedDTOs = feeds.stream()
-                .map(this::feedEntityToDTO)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(feedDTOs);
-    }
-
-    private FeedDTO feedEntityToDTO(FeedEntity feedEntity) {
-        FeedDTO feedDTO = new FeedDTO();
-        feedDTO.setFeedId(feedEntity.getFeedId());
-        feedDTO.setCreatedAt(feedEntity.getCreatedAt());
-
-        List<CommentDTO> commentDTOs = feedEntity.getComments().stream()
-                .map(this::commentEntityToDTO)
-                .collect(Collectors.toList());
-        feedDTO.setComments(commentDTOs);
-
-        return feedDTO;
-    }
-
 }
