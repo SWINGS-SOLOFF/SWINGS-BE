@@ -47,12 +47,12 @@ public class FeedEntity {
     private int likes = 0;
 
     // 댓글 연관관계: CommentEntity의 "feed" 필드에 의해 매핑됨
-    @OneToMany(mappedBy = "feed", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "feed", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<CommentEntity> comments;
 
-    @Setter
-    @Getter
+   
+    @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "feed_likes",
