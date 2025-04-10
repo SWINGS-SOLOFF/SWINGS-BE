@@ -171,6 +171,7 @@ public class FeedServiceImpl implements FeedService {
                         .username(comment.getUser() != null ? comment.getUser().getUsername() : "Unknown")
                         .content(comment.getContent())
                         .createdAt(comment.getCreatedAt())
+                        .userProfilePic(comment.getUser() != null ? comment.getUser().getUserImg() : null)
                         .build()).collect(Collectors.toList())
                 : List.of();
 
@@ -178,6 +179,7 @@ public class FeedServiceImpl implements FeedService {
                 .feedId(feed.getFeedId())
                 .userId(feed.getUser().getUserId())
                 .username(feed.getUser().getUsername())
+                .userProfilePic(feed.getUser().getUserImg())
                 .imageUrl(feed.getImageUrl())
                 .caption(feed.getCaption())
                 .createdAt(feed.getCreatedAt())

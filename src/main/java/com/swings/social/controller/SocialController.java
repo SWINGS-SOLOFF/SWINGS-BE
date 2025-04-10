@@ -51,7 +51,7 @@ public class SocialController {
     public ResponseEntity<?> getFollowers(@PathVariable Long userId) {
         return ResponseEntity.ok(socialService.getFollowers(userId));
     }
-
+    
     // 특정 유저의 팔로잉 목록 조회 (해당 유저가 팔로우하는 사용자들)
     @GetMapping("/followings/{userId}")
     public ResponseEntity<?> getFollowings(@PathVariable Long userId) {

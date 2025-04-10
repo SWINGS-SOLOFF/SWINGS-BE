@@ -223,6 +223,9 @@ public class FeedController {
                 .username(comment.getUser() != null ? comment.getUser().getUsername() : "Unknown User")
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
+                .userProfilePic(
+                    comment.getUser() != null ? comment.getUser().getUserImg() : null
+                )
                 .build();
     }
 
