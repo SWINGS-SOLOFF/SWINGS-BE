@@ -26,4 +26,8 @@ public interface MatchParticipantService {
 
     // 특정 방의 참가자 목록 조회
     List<MatchParticipantDTO> getAcceptedParticipants(Long matchGroupId);
+
+    // 나의 참가 그룹 및 신청, 과거 이력 조회
+    List<MatchParticipantDTO> getMyGroups(MatchParticipantDTO request);
+
 }

@@ -31,16 +31,41 @@ public class MatchParticipantDTO {
     @JsonProperty("joinAt")
     private LocalDateTime joinAt;
 
+    // 사용자 정보
+    @JsonProperty("username")
+    private String username;
 
-    // Entity → DTO 변환 메서드
+    @JsonProperty("name")
+    private String name;
+
+    @JsonProperty("mbti")
+    private String mbti;
+
+    @JsonProperty("job")
+    private String job;
+
+    @JsonProperty("userImg")
+    private String userImg;
+
+    @JsonProperty("gender")
+    private String gender;
+
+    @JsonProperty("age")
+    private int age;
+
+    @JsonProperty("region")
+    private String region;
+
+
+    // Entity → DTO 변환 (기본 필드만 포함)
     public static MatchParticipantDTO fromEntity(MatchParticipantEntity entity) {
         return MatchParticipantDTO.builder()
                 .matchParticipantId(entity.getMatchParticipantId())
                 .matchGroupId(entity.getMatchGroup().getMatchGroupId())
+                .hostId(entity.getMatchGroup().getHost().getUserId())
                 .userId(entity.getUser().getUserId())
                 .participantStatus(entity.getParticipantStatus().name())
                 .joinAt(entity.getJoinAt())
                 .build();
     }
-
 }

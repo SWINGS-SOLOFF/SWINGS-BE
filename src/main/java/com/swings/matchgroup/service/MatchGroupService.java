@@ -9,7 +9,9 @@ public interface MatchGroupService {
     MatchGroupDTO createMatchGroup(MatchGroupDTO matchGroupDTO);
     // 모든 그룹 보기
     List<MatchGroupDTO> getAllMatchGroups();
-    // 그룹 찾기 By Id
+    // 그룹 찾기
     MatchGroupDTO getMatchGroupById(Long groupId);
+    // 근처 그룹 찾기
+    List<MatchGroupDTO> findNearbyGroups(double latitude, double longitude, double radiusInKm);
 
 }

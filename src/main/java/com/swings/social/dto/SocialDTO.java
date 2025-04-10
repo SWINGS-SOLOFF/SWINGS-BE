@@ -14,6 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class SocialDTO {
+	
     // 팔로우, 언팔로우 관계 맺기에 필요한 사용자 아이디
     private Long followerId;
     private Long followeeId;
