@@ -15,8 +15,9 @@ public interface UserLikeRepository extends JpaRepository<UserLikeEntity, Long> 
     // 특정 유저가 좋아요를 누른 기록 (보낸 좋아요)
     List<UserLikeEntity> findByFromUserId(String fromUserId);
 
-    // 특정 유저가 받은 좋아요 조회
+    // 내가 받은 좋아요 리스트 (toUserId 기준)
     List<UserLikeEntity> findByToUserId(String toUserId);
+
 
     // 두 유저가 서로 좋아요 했는지 확인 (쌍방 여부 체크)
     @Query("SELECT COUNT(u) FROM UserLikeEntity u WHERE " +

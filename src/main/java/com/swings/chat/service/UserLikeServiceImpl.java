@@ -9,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,7 +19,7 @@ import java.util.stream.Collectors;
 public class UserLikeServiceImpl implements UserLikeService {
 
     private final UserLikeRepository userLikeRepository;
-    private final ChatRoomService chatRoomService; // ✅ 채팅방 서비스 사용
+    private final ChatRoomService chatRoomService;
     private final UserRepository userRepository;
 
     @Override
@@ -32,7 +34,6 @@ public class UserLikeServiceImpl implements UserLikeService {
                     .build());
         }
 
-        // 쌍방 좋아요면 채팅방 생성
         if (isMatched(fromUserId, toUserId)) {
             chatRoomService.createOrGetChatRoom(fromUserId, toUserId);
         }
@@ -49,10 +50,8 @@ public class UserLikeServiceImpl implements UserLikeService {
 
         return sentLikes.stream().map(like -> {
             String toUserId = like.getToUserId();
-
             UserEntity toUser = userRepository.findByUsername(toUserId)
                     .orElseThrow(() -> new IllegalArgumentException("상대방 유저 없음: " + toUserId));
-
             boolean isMutual = userLikeRepository.existsByFromUserIdAndToUserId(toUserId, fromUsername);
 
             return SentLikeDTO.builder()
@@ -62,5 +61,53 @@ public class UserLikeServiceImpl implements UserLikeService {
                     .isMutual(isMutual)
                     .build();
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserLikeEntity> getLikesReceived(String toUserId) {
+        return userLikeRepository.findByToUserId(toUserId);
+    }
+
+    @Override
+    public Map<String, List<SentLikeDTO>> getSentAndReceivedLikes(String userId) {
+        // 내가 보낸 좋아요
+        List<UserLikeEntity> sentLikes = userLikeRepository.findByFromUserId(userId);
+
+        // 내가 받은 좋아요
+        List<UserLikeEntity> receivedLikes = userLikeRepository.findByToUserId(userId);
+
+        // 보낸 리스트 → SentLikeDTO로 변환
+        List<SentLikeDTO> sentResult = sentLikes.stream().map(like -> {
+            UserEntity toUser = userRepository.findByUsername(like.getToUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
+            boolean isMutual = userLikeRepository.existsByFromUserIdAndToUserId(like.getToUserId(), userId);
+
+            return SentLikeDTO.builder()
+                    .username(toUser.getUsername())
+                    .name(toUser.getName())
+                    .userImg(toUser.getUserImg())
+                    .isMutual(isMutual)
+                    .build();
+        }).collect(Collectors.toList());
+
+        // 받은 리스트 → fromUserId 기준으로 유저 정보 조회해서 SentLikeDTO 변환
+        List<SentLikeDTO> receivedResult = receivedLikes.stream().map(like -> {
+            UserEntity fromUser = userRepository.findByUsername(like.getFromUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
+            boolean isMutual = userLikeRepository.existsByFromUserIdAndToUserId(fromUser.getUsername(), userId);
+
+            return SentLikeDTO.builder()
+                    .username(fromUser.getUsername())
+                    .name(fromUser.getName())
+                    .userImg(fromUser.getUserImg())
+                    .isMutual(isMutual)
+                    .build();
+        }).collect(Collectors.toList());
+
+        // Map으로 감싸서 반환
+        Map<String, List<SentLikeDTO>> result = new HashMap<>();
+        result.put("sentLikes", sentResult);
+        result.put("receivedLikes", receivedResult);
+        return result;
     }
 }
