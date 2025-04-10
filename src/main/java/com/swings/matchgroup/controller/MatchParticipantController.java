@@ -77,4 +77,14 @@ public class MatchParticipantController {
         );
     }
 
+    // 나의 참가 그룹 및 신청, 과거 이력 조회
+    @PostMapping("/my")
+    public ResponseEntity<List<MatchParticipantDTO>> getMyGroups(@RequestBody MatchParticipantDTO request) {
+        return ResponseEntity.ok(matchParticipantService.getMyGroups(request));
+    }
+
+
+
+
+
 }

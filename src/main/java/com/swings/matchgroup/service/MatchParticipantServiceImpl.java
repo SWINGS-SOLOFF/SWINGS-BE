@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +26,22 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
     private final UserRepository userRepository;
     private final NotificationServiceImpl notificationService;
 
+    // 공통 유저 정보 세팅
+    private void enrichUserInfo(MatchParticipantDTO dto) {
+        userRepository.findById(dto.getUserId()).ifPresent(user -> {
+            dto.setUsername(user.getUsername());
+            dto.setName(user.getName());
+            dto.setMbti(user.getMbti());
+            dto.setJob(user.getJob());
+            dto.setUserImg(user.getUserImg());
+            dto.setGender(user.getGender().name());
+            dto.setRegion(user.getActivityRegion().name());
+            // 한국식 나이
+            int currentYear = LocalDate.now().getYear();
+            dto.setAge(currentYear - user.getBirthDate().getYear() + 1);
+        });
+    }
+
     // 참가 신청
     @Override
     @Transactional
@@ -35,9 +52,8 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // 중복 신청 방지
-        boolean alreadyJoined = matchParticipantRepository.existsByMatchGroup_MatchGroupIdAndUser_UserId(
-                matchGroupId, userId);
+        boolean alreadyJoined = matchParticipantRepository
+                .existsByMatchGroup_MatchGroupIdAndUser_UserId(matchGroupId, userId);
         if (alreadyJoined) {
             throw new RuntimeException("이미 참가한 사용자입니다.");
         }
@@ -49,14 +65,17 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
                 .joinAt(LocalDateTime.now())
                 .build();
 
-        // 알림 전송
+        MatchParticipantEntity saved = matchParticipantRepository.save(participant);
+
         notificationService.notifyHostOnJoinRequest(
                 matchGroup.getGroupName(),
                 matchGroup.getHost().getUsername(),
                 user.getUsername()
         );
 
-        return MatchParticipantDTO.fromEntity(matchParticipantRepository.save(participant));
+        MatchParticipantDTO dto = MatchParticipantDTO.fromEntity(saved);
+        enrichUserInfo(dto);
+        return dto;
     }
 
     // 참가 신청 취소
@@ -151,7 +170,11 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
     public List<MatchParticipantDTO> getParticipantsByMatchGroupId(Long matchGroupId) {
         return matchParticipantRepository.findByMatchGroupMatchGroupId(matchGroupId)
                 .stream()
-                .map(MatchParticipantDTO::fromEntity)
+                .map(entity -> {
+                    MatchParticipantDTO dto = MatchParticipantDTO.fromEntity(entity);
+                    enrichUserInfo(dto);
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -162,7 +185,41 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
                         matchGroupId,
                         MatchParticipantEntity.ParticipantStatus.ACCEPTED
                 ).stream()
-                .map(MatchParticipantDTO::fromEntity)
+                .map(entity -> {
+                    MatchParticipantDTO dto = MatchParticipantDTO.fromEntity(entity);
+                    enrichUserInfo(dto);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    // 나의 참가 그룹 및 신청, 과거 이력 조회
+    @Override
+    public List<MatchParticipantDTO> getMyGroups(MatchParticipantDTO request) {
+        Long userId = request.getUserId();
+        String status = request.getParticipantStatus();
+
+        if (userId == null) {
+            throw new RuntimeException("userId가 필요합니다.");
+        }
+
+        List<MatchParticipantEntity> result;
+
+        if (status != null && !status.isEmpty()) {
+            MatchParticipantEntity.ParticipantStatus enumStatus =
+                    MatchParticipantEntity.ParticipantStatus.valueOf(status.toUpperCase());
+
+            result = matchParticipantRepository.findByUser_UserIdAndParticipantStatus(userId, enumStatus);
+        } else {
+            result = matchParticipantRepository.findByUser_UserId(userId);
+        }
+
+        return result.stream()
+                .map(entity -> {
+                    MatchParticipantDTO dto = MatchParticipantDTO.fromEntity(entity);
+                    enrichUserInfo(dto);
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 }

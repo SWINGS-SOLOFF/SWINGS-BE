@@ -1,11 +1,9 @@
 package com.swings.matchgroup.repository;
 
-import com.swings.matchgroup.entity.MatchGroupEntity;
 import com.swings.matchgroup.entity.MatchParticipantEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -22,4 +20,11 @@ public interface MatchParticipantRepository extends JpaRepository<MatchParticipa
             Long matchGroupId,
             MatchParticipantEntity.ParticipantStatus participantStatus
     );
+
+    // 나의 참가 그룹 및 신청, 과거 이력 조회
+    List<MatchParticipantEntity> findByUser_UserId(Long userId);
+
+    // 특정 사용자의 모든 참가자 조회
+    List<MatchParticipantEntity> findByUser_UserIdAndParticipantStatus(Long userId, MatchParticipantEntity.ParticipantStatus status);
+
 }

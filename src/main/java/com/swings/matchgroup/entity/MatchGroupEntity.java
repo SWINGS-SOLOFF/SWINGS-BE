@@ -18,14 +18,16 @@ public class MatchGroupEntity {
     private Long matchGroupId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "host_id", nullable = false) // DB 컬럼명 명시
+    @JoinColumn(name = "host_id", nullable = false)
     private UserEntity host; // 방장 (그룹 생성자)
 
     @Column(nullable = true)
     private String groupName; // 그룹 이름
 
     @Column(nullable = false)
-    private String location; // 골프장 장소
+    private String location; // 골프장 위치
+    private Double latitude; // 위도
+    private Double longitude; // 경도
 
     @Column(nullable = false)
     private String schedule; // 일정 (날짜, 시간)
@@ -42,7 +44,7 @@ public class MatchGroupEntity {
     @Column(nullable = false)
     private String ageRange; // 연령
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String description; // 그룹 설명
 
     @Column(nullable = false)
