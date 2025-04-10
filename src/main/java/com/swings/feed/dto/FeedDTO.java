@@ -23,6 +23,7 @@ public class FeedDTO {
     private LocalDateTime createdAt;
     private int likes;
     private boolean liked;
+    private String userProfilePic;
     private List<CommentDTO> comments = new ArrayList<>();
 
         // FeedEntity 객체를 받아서 FeedDTO로 변환하는 생성자
@@ -30,6 +31,7 @@ public class FeedDTO {
             this.feedId = feedEntity.getFeedId();
             this.userId = feedEntity.getUser().getUserId();
             this.username = feedEntity.getUser().getUsername();
+            this.userProfilePic = feedEntity.getUser().getUserImg();
             this.imageUrl = feedEntity.getImageUrl();
             this.caption = feedEntity.getCaption();
             this.createdAt = feedEntity.getCreatedAt();
