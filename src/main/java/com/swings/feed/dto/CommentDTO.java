@@ -16,6 +16,7 @@ public class CommentDTO {
     private String username;
     private String content;
     private LocalDateTime createdAt;
+    private String userProfilePic;
 
     // CommentEntity 객체를 받아서 CommentDTO로 변환하는 생성자
     public CommentDTO(CommentEntity commentEntity) {
@@ -23,5 +24,6 @@ public class CommentDTO {
         this.userId = commentEntity.getUser().getUserId();
         this.content = commentEntity.getContent();
         this.createdAt = commentEntity.getCreatedAt();
+        this.userProfilePic = commentEntity.getUser().getUserImg();
     }
 }
