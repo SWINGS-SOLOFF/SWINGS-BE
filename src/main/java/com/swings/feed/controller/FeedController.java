@@ -2,6 +2,7 @@ package com.swings.feed.controller;
 
 import com.swings.feed.dto.CommentDTO;
 import com.swings.feed.dto.FeedDTO;
+import com.swings.feed.dto.FeedUpdateRequestDTO;
 import com.swings.feed.entity.CommentEntity;
 import com.swings.feed.entity.FeedEntity;
 import com.swings.feed.repository.FeedRepository;
@@ -53,12 +54,10 @@ public class FeedController {
                                                   @RequestParam int page,
                                                   @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        List<FeedDTO> feeds = (userId == null)
-                ? feedService.getAllFeeds(pageable)
-                : feedService.getFeedsRandomized(userId, pageable);
+        List<FeedDTO> feeds = feedService.getAllFeeds(pageable, userId);
         return ResponseEntity.ok(feeds);
     }
-
+    
     @GetMapping("/filtered")
     public ResponseEntity<List<FeedDTO>> getFilteredFeeds(
             @RequestParam Long userId,
@@ -76,19 +75,19 @@ public class FeedController {
             if (!followeeIds.isEmpty()) {
                 feeds = feedService.getFeedsByUserListExcludingSelf(followeeIds, pageable, userId);
             } else {
-                feeds = feedService.getAllFeeds(pageable).stream()
-                        .filter(feed -> !feed.getUserId().equals(userId))
-                        .collect(Collectors.toList());
+            	feeds = feedService.getAllFeeds(pageable, userId).stream()
+            	        .filter(feed -> !feed.getUserId().equals(userId))
+            	        .collect(Collectors.toList());
 
                 if ("random".equals(sort)) {
                     Collections.shuffle(feeds);
                 }
             }
         } else {
-            feeds = feedService.getAllFeeds(pageable).stream()
-                    .filter(feed -> !feed.getUserId().equals(userId))
-                    .collect(Collectors.toList());
-
+        	feeds = feedService.getAllFeeds(pageable, userId).stream()
+        	        .filter(feed -> !feed.getUserId().equals(userId))
+        	        .collect(Collectors.toList());
+        	
             if ("random".equals(sort)) {
                 Collections.shuffle(feeds);
             }
@@ -111,9 +110,9 @@ public class FeedController {
         }
 
         // 2. 전체 랜덤 피드 (팔로우, 본인 제외)
-        List<FeedDTO> latestFeeds = feedService.getAllFeeds(pageable).stream()
-                .filter(feed -> !feed.getUserId().equals(userId) && !followeeIds.contains(feed.getUserId()))
-                .collect(Collectors.toList());
+        List<FeedDTO> latestFeeds = feedService.getAllFeeds(pageable, userId).stream()
+        	    .filter(feed -> !feed.getUserId().equals(userId) && !followeeIds.contains(feed.getUserId()))
+        	    .collect(Collectors.toList());
 
         result.addAll(latestFeeds);
 
@@ -137,9 +136,17 @@ public class FeedController {
     }
 
     @PutMapping("/{feedId}")
-    public ResponseEntity<FeedDTO> updateFeed(@PathVariable Long feedId,
-                                              @RequestBody FeedDTO updatedFeedDTO) {
-        return ResponseEntity.ok(feedService.updateFeed(feedId, updatedFeedDTO));
+    public ResponseEntity<FeedDTO> updateFeed(
+            @PathVariable Long feedId,
+            @ModelAttribute FeedUpdateRequestDTO request) {
+
+        String imageUrl = null;
+        if (request.getFile() != null && !request.getFile().isEmpty()) {
+            imageUrl = saveFile(request.getFile());
+        }
+
+        FeedDTO updatedFeed = feedService.updateFeed(feedId, request.getCaption(), imageUrl);
+        return ResponseEntity.ok(updatedFeed);
     }
 
     @DeleteMapping("/{feedId}")

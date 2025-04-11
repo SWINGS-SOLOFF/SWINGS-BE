@@ -39,12 +39,12 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedDTO> getAllFeeds(Pageable pageable) {
+    public List<FeedDTO> getAllFeeds(Pageable pageable, Long currentUserId) {
         return feedRepository.findAll(pageable).stream()
-                .map(feed -> convertToDTO(feed, null))
-                .collect(Collectors.toList());
+                 .map(feed -> convertToDTO(feed, currentUserId))
+                 .collect(Collectors.toList());
     }
-
+    
     @Override
     public Optional<FeedDTO> getFeedById(Long feedId) {
         return feedRepository.findById(feedId)
@@ -52,11 +52,13 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public FeedDTO updateFeed(Long feedId, FeedDTO updatedFeedDTO) {
+    public FeedDTO updateFeed(Long feedId, String caption, String imageUrl) {
         return feedRepository.findById(feedId).map(feed -> {
-            feed.setCaption(updatedFeedDTO.getCaption());
-            feed.setImageUrl(updatedFeedDTO.getImageUrl());
-            return convertToDTO(feedRepository.save(feed), updatedFeedDTO.getUserId());
+            feed.setCaption(caption);
+            if (imageUrl != null) {
+                feed.setImageUrl(imageUrl);
+            }
+            return convertToDTO(feedRepository.save(feed), feed.getUser().getUserId());
         }).orElseThrow(() -> new RuntimeException("Feed not found with id: " + feedId));
     }
 
@@ -97,9 +99,10 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     public List<FeedDTO> getFeedsByUserId(Long userId) {
-        return feedRepository.findByUserUserIdOrderByCreatedAtDesc(userId).stream()
-                .map(feed -> convertToDTO(feed, userId))
-                .collect(Collectors.toList());
+        List<FeedEntity> feedEntities = feedRepository.findByUserUserIdOrderByCreatedAtDesc(userId);
+        return feedEntities.stream()
+            .map(feed -> convertToDTO(feed, userId))
+            .collect(Collectors.toList());
     }
 
     @Override
