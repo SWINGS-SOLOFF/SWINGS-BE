@@ -235,8 +235,20 @@ public class FeedController {
                 )
                 .build();
     }
+    
+    @PatchMapping("/{feedId}/comments/{commentId}")
+    public ResponseEntity<CommentDTO> updateComment(
+            @PathVariable Long feedId,
+            @PathVariable Long commentId,
+            @RequestParam String content) {
 
-    @Getter @Setter
+        CommentEntity updatedComment = commentService.updateComment(commentId, content);
+        return ResponseEntity.ok(convertToDTO(updatedComment));
+    }
+    
+
+    @Getter
+    @Setter
     public static class UserIdRequest {
         private Long userId;
     }

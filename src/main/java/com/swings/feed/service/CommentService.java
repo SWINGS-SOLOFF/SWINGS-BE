@@ -7,4 +7,5 @@ public interface CommentService {
     CommentEntity addComment(Long feedId, Long userId, String content);
     void deleteComment(Long commentId);
     List<CommentEntity> getCommentsByFeedId(Long feedId);
+    CommentEntity updateComment(Long commentId, String content);
 }
