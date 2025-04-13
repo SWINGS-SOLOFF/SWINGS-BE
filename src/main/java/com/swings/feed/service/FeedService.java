@@ -1,3 +1,4 @@
+
 package com.swings.feed.service;
 
 import com.swings.feed.dto.FeedDTO;
@@ -9,9 +10,9 @@ import java.util.Optional;
 
 public interface FeedService {
     FeedDTO createFeed(FeedDTO feedDTO);
-    List<FeedDTO> getAllFeeds(Pageable pageable);
+    List<FeedDTO> getAllFeeds(Pageable pageable, Long currentUserId);
     Optional<FeedDTO> getFeedById(Long feedId);
-    FeedDTO updateFeed(Long feedId, FeedDTO updatedFeedDTO);
+    FeedDTO updateFeed(Long feedId, String caption, String imageUrl);
     void deleteFeed(Long feedId);
     FeedDTO likeFeed(Long feedId, Long userId);
     FeedDTO unlikeFeed(Long feedId, Long userId);
