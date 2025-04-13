@@ -1,6 +1,10 @@
 package com.swings.user.entity;
 
 import com.swings.email.entity.UserVerifyEntity;
+import com.swings.feed.entity.CommentEntity;
+import com.swings.feed.entity.FeedEntity;
+import com.swings.matchgroup.entity.MatchGroupEntity;
+import com.swings.matchgroup.entity.MatchParticipantEntity;
 import com.swings.social.entity.SocialEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -110,6 +114,17 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<UserVerifyEntity> userVerifyList;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<FeedEntity> feeds;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<CommentEntity> comments;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<MatchParticipantEntity> matchParticipations;
+
+    @OneToMany(mappedBy = "host", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<MatchGroupEntity> createdGroups;
 
 
 
