@@ -47,3 +47,5 @@ src/main/resources/config/.env
 **/.env
 **/oauth-client-id.txt
 src/main/resources/config/oauth-client-id.txt
+
+.DS_Store
