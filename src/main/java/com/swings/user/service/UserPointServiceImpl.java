@@ -52,14 +52,17 @@ public class UserPointServiceImpl implements UserPointService {
     @Transactional
     public void usePoint(String username, int amount, String description) {
         if (amount <= 0) throw new IllegalArgumentException("사용 금액은 0보다 커야 합니다.");
+
         UserEntity user = getUser(username);
 
-        if (user.getPointBalance() < amount)
+        // 🔥 핵심 조건: 포인트 부족 시 예외 던져서 400으로 응답 처리
+        if (user.getPointBalance() < amount) {
             throw new IllegalArgumentException("포인트가 부족합니다.");
+        }
 
         userPointRepository.save(UserPointEntity.builder()
                 .user(user)
-                .amount(-amount)
+                .amount(-amount) // 💸 사용은 음수로 기록
                 .type(PointType.USE)
                 .description(description)
                 .build());
