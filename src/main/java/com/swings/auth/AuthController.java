@@ -1,6 +1,5 @@
 package com.swings.auth;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.swings.security.JwtTokenProvider;
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
@@ -36,26 +35,27 @@ public class AuthController {
 
     /**
      * ✅ Google OAuth 로그인 엔드포인트
-     * - 프론트에서 받은 idToken 검증
+     * - 프론트에서 받은 accessToken으로 유저 정보 조회
      * - DB에 사용자 존재 시: JWT 토큰 발급
      * - 사용자 미존재 시: 회원가입 안내 및 기본정보 반환
      */
     @PostMapping("/oauth/google")
     public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> request) {
-        String idToken = request.get("idToken");
+        String accessToken = request.get("accessToken");
 
-        GoogleIdToken.Payload payload = googleOAuthService.verify(idToken);
-        if (payload == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid ID Token");
+        // ✅ accessToken으로 유저 정보 조회
+        Map<String, Object> userInfo = googleOAuthService.getUserInfo(accessToken);
+        if (userInfo == null || !userInfo.containsKey("email")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Access Token");
         }
 
-        String email = payload.getEmail();
-        String name = (String) payload.get("name");
+        String email = (String) userInfo.get("email");
+        String name = (String) userInfo.get("name");
 
         Optional<UserEntity> userOpt = userRepository.findByEmail(email);
 
         if (userOpt.isPresent()) {
-            // 기존 회원 → 토큰 발급
+            // 기존 회원 → JWT 토큰 발급
             UserEntity user = userOpt.get();
             String token = jwtTokenProvider.generateToken(user.getUsername(), user.getRole());
             return ResponseEntity.ok(new TokenResponse(token));
@@ -65,7 +65,7 @@ public class AuthController {
             signupData.put("email", email);
             signupData.put("name", name);
             signupData.put("isNew", true);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(signupData);
+            return ResponseEntity.ok(signupData);
         }
     }
 }

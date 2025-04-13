@@ -1,54 +1,52 @@
 package com.swings.auth;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.Collections;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
 public class GoogleOAuthService {
 
-    private final GoogleIdTokenVerifier verifier;
+    private static final String USERINFO_URL = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=";
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public GoogleOAuthService(@Value("${google.oauth.client-id-file}") Resource clientIdFile) {
-        String clientId = readClientIdFromFile(clientIdFile);
-        log.info("✅ [GoogleOAuthService] 불러온 clientId: {}", clientId);
-
-        this.verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), JacksonFactory.getDefaultInstance())
-                .setAudience(Collections.singletonList(clientId))
-                .build();
-    }
-
-    private String readClientIdFromFile(Resource resource) {
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(resource.getInputStream()))) {
-
-            String line = reader.readLine();
-            if (line == null || line.isBlank()) {
-                throw new RuntimeException("Google Client ID 파일이 비어있습니다.");
-            }
-            return line.trim();
-        } catch (Exception e) {
-            log.error("❌ [GoogleOAuthService] Client ID 파일 읽기 실패", e);
-            throw new RuntimeException("Google Client ID 파일을 읽을 수 없습니다.", e);
-        }
-    }
-
-    public GoogleIdToken.Payload verify(String idTokenString) {
+    /**
+     * ✅ access_token을 통해 Google 유저 정보 조회
+     */
+    public Map<String, Object> getUserInfo(String accessToken) {
         try {
-            GoogleIdToken idToken = verifier.verify(idTokenString);
-            return (idToken != null) ? idToken.getPayload() : null;
+            URL url = new URL(USERINFO_URL + accessToken);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+            conn.setRequestProperty("Accept", "application/json");
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode != 200) {
+                log.error("❌ [GoogleOAuthService] 유저 정보 요청 실패 - 응답 코드: {}", responseCode);
+                return null;
+            }
+
+            InputStream responseStream = conn.getInputStream();
+            JsonNode response = objectMapper.readTree(responseStream);
+
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("email", response.get("email").asText());
+            userInfo.put("name", response.get("name").asText());
+
+            log.info("✅ [GoogleOAuthService] 사용자 정보 조회 성공: {}", userInfo);
+            return userInfo;
+
         } catch (Exception e) {
-            log.error("❌ [GoogleOAuthService] ID 토큰 검증 실패", e);
+            log.error("❌ [GoogleOAuthService] access token으로 사용자 정보 조회 실패", e);
             return null;
         }
     }

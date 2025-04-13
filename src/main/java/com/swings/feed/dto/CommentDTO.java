@@ -18,12 +18,19 @@ public class CommentDTO {
     private LocalDateTime createdAt;
     private String userProfilePic;
 
-    // CommentEntity 객체를 받아서 CommentDTO로 변환하는 생성자
     public CommentDTO(CommentEntity commentEntity) {
         this.commentId = commentEntity.getCommentId();
-        this.userId = commentEntity.getUser().getUserId();
         this.content = commentEntity.getContent();
         this.createdAt = commentEntity.getCreatedAt();
-        this.userProfilePic = commentEntity.getUser().getUserImg();
+
+        if (commentEntity.getUser() != null) {
+            this.userId = commentEntity.getUser().getUserId();
+            this.username = commentEntity.getUser().getUsername();
+            this.userProfilePic = commentEntity.getUser().getUserImg();
+        } else {
+            this.userId = null;
+            this.username = "Unknown";
+            this.userProfilePic = null;
+        }
     }
 }

@@ -24,6 +24,6 @@ public interface UserService {
     void updateUserRole(String username, String newRole);
 
     //비밀번호 리셋
-    void resetPassword(String username);
+    void resetPassword(String username, String email);
 
 }
