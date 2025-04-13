@@ -25,8 +25,13 @@ public class ChatRoomController {
 
     // ✅ 2. 채팅방 생성 or 조회 (기존 그대로 유지)
     @PostMapping("/room")
-    public ResponseEntity<ChatRoomEntity> createOrGetChatRoom(@RequestParam String user1, @RequestParam String user2) {
-        ChatRoomEntity chatRoom = chatRoomService.createOrGetChatRoom(user1, user2);
+    public ResponseEntity<ChatRoomEntity> createOrGetChatRoom(
+            @RequestParam String user1,
+            @RequestParam String user2,
+            @RequestParam(required = false, defaultValue = "false") boolean isSuperChat // ✅ 추가
+    ) {
+        ChatRoomEntity chatRoom = chatRoomService.createOrGetChatRoom(user1, user2, isSuperChat); // ✅ 수정
         return ResponseEntity.ok(chatRoom);
     }
+
 }

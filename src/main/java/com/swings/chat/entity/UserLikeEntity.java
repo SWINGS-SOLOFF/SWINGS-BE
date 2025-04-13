@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "userLikes") // DB 테이블과 매핑
+@Table(name = "userLikes") // DB 테이블 이름
 public class UserLikeEntity {
 
     @Id
@@ -27,7 +27,10 @@ public class UserLikeEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // ✅ 저장 전에 자동으로 현재 시간 세팅
+    // ✅ 예약어 문제 방지 → 컬럼명에 백틱(`) 적용
+    @Column(name = "`match`", nullable = false)
+    private boolean match;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

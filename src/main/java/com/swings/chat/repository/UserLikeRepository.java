@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface UserLikeRepository extends JpaRepository<UserLikeEntity, Long> {
@@ -18,6 +19,7 @@ public interface UserLikeRepository extends JpaRepository<UserLikeEntity, Long> 
     // 내가 받은 좋아요 리스트 (toUserId 기준)
     List<UserLikeEntity> findByToUserId(String toUserId);
 
+    int countByFromUserIdAndCreatedAtAfter(String fromUserId, LocalDateTime createdAt);
 
     // 두 유저가 서로 좋아요 했는지 확인 (쌍방 여부 체크)
     @Query("SELECT COUNT(u) FROM UserLikeEntity u WHERE " +

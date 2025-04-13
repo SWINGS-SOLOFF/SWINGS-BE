@@ -9,5 +9,7 @@ public interface ChatRoomService {
     List<ChatRoomResponseDto> getChatRoomsByUser(String username);
 
     ChatRoomEntity createOrGetChatRoom(String user1, String user2);
-}
 
+    // ✅ 슈퍼챗 구분용 메서드 추가
+    ChatRoomEntity createOrGetChatRoom(String user1, String user2, boolean isSuperChat);
+}

@@ -16,6 +16,7 @@ public class ChatRoomResponseDto {
     private String user2;
     private String lastMessage;
     private LocalDateTime lastMessageTime;
+    private String targetName; //  이름만 추가
 
     private Long unreadCount;
 }
