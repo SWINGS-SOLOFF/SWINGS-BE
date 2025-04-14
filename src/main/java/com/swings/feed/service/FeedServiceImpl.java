@@ -5,6 +5,7 @@ import com.swings.feed.dto.FeedDTO;
 import com.swings.feed.entity.FeedEntity;
 import com.swings.feed.entity.CommentEntity;
 import com.swings.feed.repository.FeedRepository;
+import com.swings.notification.service.FCMService;
 import com.swings.social.dto.SocialDTO;
 import com.swings.social.service.SocialService;
 import com.swings.user.dto.UserDTO;
@@ -24,11 +25,13 @@ public class FeedServiceImpl implements FeedService {
     private final FeedRepository feedRepository;
     private final UserRepository userRepository;
     private final SocialService socialService;
+    private final FCMService fcmService;
 
-    public FeedServiceImpl(FeedRepository feedRepository, UserRepository userRepository, SocialService socialService) {
+    public FeedServiceImpl(FeedRepository feedRepository, UserRepository userRepository, SocialService socialService, FCMService fcmService) {
         this.feedRepository = feedRepository;
         this.userRepository = userRepository;
         this.socialService = socialService;
+        this.fcmService = fcmService;
     }
 
     @Override
@@ -39,12 +42,12 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedDTO> getAllFeeds(Pageable pageable, Long currentUserId) {
+    public List<FeedDTO> getAllFeeds(Pageable pageable) {
         return feedRepository.findAll(pageable).stream()
-                 .map(feed -> convertToDTO(feed, currentUserId))
-                 .collect(Collectors.toList());
+                .map(feed -> convertToDTO(feed, null))
+                .collect(Collectors.toList());
     }
-    
+
     @Override
     public Optional<FeedDTO> getFeedById(Long feedId) {
         return feedRepository.findById(feedId)
@@ -52,13 +55,11 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public FeedDTO updateFeed(Long feedId, String caption, String imageUrl) {
+    public FeedDTO updateFeed(Long feedId, FeedDTO updatedFeedDTO) {
         return feedRepository.findById(feedId).map(feed -> {
-            feed.setCaption(caption);
-            if (imageUrl != null) {
-                feed.setImageUrl(imageUrl);
-            }
-            return convertToDTO(feedRepository.save(feed), feed.getUser().getUserId());
+            feed.setCaption(updatedFeedDTO.getCaption());
+            feed.setImageUrl(updatedFeedDTO.getImageUrl());
+            return convertToDTO(feedRepository.save(feed), updatedFeedDTO.getUserId());
         }).orElseThrow(() -> new RuntimeException("Feed not found with id: " + feedId));
     }
 
@@ -70,7 +71,7 @@ public class FeedServiceImpl implements FeedService {
         feedRepository.delete(feed);
         System.out.println("Feed deleted successfully with ID: " + feedId);
     }
-    
+
     @Override
     public FeedDTO likeFeed(Long feedId, Long userId) {
         FeedEntity feed = getFeedEntityOrThrow(feedId);
@@ -78,8 +79,17 @@ public class FeedServiceImpl implements FeedService {
 
         if (feed.getLikedUsers().add(user)) {
             feed.setLikes(feed.getLikes() + 1);
-        }
 
+            // 피드 작성자에게 푸시 알림 전송
+            UserEntity owner = feed.getUser();
+            if (owner != null && owner.getPushToken() != null) {
+                fcmService.sendPush(
+                        owner.getPushToken(),
+                        "❤️ 좋아요 알림",
+                        user.getUsername() + "님이 '" + feed.getCaption() + "'을 좋아합니다!"
+                );
+            }
+        }
         return convertToDTO(feedRepository.save(feed), userId);
     }
 
@@ -99,10 +109,9 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     public List<FeedDTO> getFeedsByUserId(Long userId) {
-        List<FeedEntity> feedEntities = feedRepository.findByUserUserIdOrderByCreatedAtDesc(userId);
-        return feedEntities.stream()
-            .map(feed -> convertToDTO(feed, userId))
-            .collect(Collectors.toList());
+        return feedRepository.findByUserUserIdOrderByCreatedAtDesc(userId).stream()
+                .map(feed -> convertToDTO(feed, userId))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -162,24 +171,23 @@ public class FeedServiceImpl implements FeedService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
     }
 
+
+
     private FeedDTO convertToDTO(FeedEntity feed, Long currentUserId) {
         boolean liked = currentUserId != null &&
                 feed.getLikedUsers().stream()
                         .anyMatch(user -> user.getUserId().equals(currentUserId));
 
-        List<CommentDTO> commentDTOs = feed.getComments() != null
-        	    ? feed.getComments().stream()
-        	        .map(comment -> {
-        	            if (comment.getUser() != null) {
-        	                comment.getUser().getUserId();    
-        	                comment.getUser().getUsername();
-        	                comment.getUser().getUserImg();
-        	            }
-        	            return new CommentDTO(comment);
-        	        })
-        	        .collect(Collectors.toList())
-        	    : List.of();
-        
+        List<CommentDTO> commentDTOs = feed.getComments() != null ?
+                feed.getComments().stream().map(comment -> CommentDTO.builder()
+                        .commentId(comment.getCommentId())
+                        .userId(comment.getUser() != null ? comment.getUser().getUserId() : null)
+                        .username(comment.getUser() != null ? comment.getUser().getUsername() : "Unknown")
+                        .content(comment.getContent())
+                        .createdAt(comment.getCreatedAt())
+                        .userProfilePic(comment.getUser() != null ? comment.getUser().getUserImg() : null)
+                        .build()).collect(Collectors.toList())
+                : List.of();
 
         return FeedDTO.builder()
                 .feedId(feed.getFeedId())
@@ -193,7 +201,6 @@ public class FeedServiceImpl implements FeedService {
                 .liked(liked)
                 .comments(commentDTOs)
                 .build();
-        
     }
 
     private FeedEntity convertToEntity(FeedDTO dto) {

@@ -51,7 +51,7 @@ public class FeedEntity {
     @JsonManagedReference
     private List<CommentEntity> comments;
 
-   
+
     @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

@@ -48,4 +48,8 @@ src/main/resources/config/.env
 **/oauth-client-id.txt
 src/main/resources/config/oauth-client-id.txt
 
+# Firebase 키 보안
+src/main/resources/config/*.json
+
+
 .DS_Store

@@ -5,11 +5,13 @@ import com.swings.matchgroup.entity.MatchGroupEntity;
 import com.swings.matchgroup.entity.MatchParticipantEntity;
 import com.swings.matchgroup.repository.MatchGroupRepository;
 import com.swings.matchgroup.repository.MatchParticipantRepository;
+import com.swings.notification.service.FCMService;
 import com.swings.notification.service.NotificationServiceImpl;
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MatchParticipantServiceImpl implements MatchParticipantService {
 
@@ -25,6 +28,7 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
     private final MatchGroupRepository matchGroupRepository;
     private final UserRepository userRepository;
     private final NotificationServiceImpl notificationService;
+    private final FCMService fcmService;
 
     // 공통 유저 정보 세팅
     private void enrichUserInfo(MatchParticipantDTO dto) {
@@ -65,14 +69,30 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
                 .joinAt(LocalDateTime.now())
                 .build();
 
+        log.info("🚩1 - 참가자 저장 시작");
         MatchParticipantEntity saved = matchParticipantRepository.save(participant);
+        log.info("🚩2 - 참가자 저장 완료");
 
+        // 실시간 웹 알림
+        log.info("🚩3 - 웹소켓 알림 시작");
         notificationService.notifyHostOnJoinRequest(
                 matchGroup.getGroupName(),
                 matchGroup.getHost().getUsername(),
                 user.getUsername()
         );
+        log.info("🚩4 - 웹소켓 알림 완료");
 
+        // FCM 푸시 알림
+        UserEntity host = matchGroup.getHost();
+        if (host.getPushToken() != null) {
+            log.info("🚩5 - FCM 푸시 시작");
+            fcmService.sendPush(
+                    host.getPushToken(),
+                    "⛳ 참가 신청 알림",
+                    user.getUsername() + "님이 [" + matchGroup.getGroupName() + "]에 참가 신청했습니다."
+            );
+            log.info("🚩6 - FCM 푸시 완료");
+        }
         MatchParticipantDTO dto = MatchParticipantDTO.fromEntity(saved);
         enrichUserInfo(dto);
         return dto;
@@ -113,10 +133,21 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         participant.setParticipantStatus(MatchParticipantEntity.ParticipantStatus.ACCEPTED);
         matchParticipantRepository.save(participant);
 
+        // 실시간 알림
         notificationService.notifyUserOnApproval(
                 matchGroup.getGroupName(),
                 participant.getUser().getUsername()
         );
+
+        // FCM 푸시 알림
+        UserEntity target = participant.getUser();
+        if (target.getPushToken() != null) {
+            fcmService.sendPush(
+                    target.getPushToken(),
+                    "🎉 참가 승인 완료",
+                    "[" + matchGroup.getGroupName() + "] 참가가 승인되었습니다."
+            );
+        }
     }
 
     // 참가 신청 거절(방장)
@@ -139,10 +170,21 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         participant.setParticipantStatus(MatchParticipantEntity.ParticipantStatus.REJECTED);
         matchParticipantRepository.save(participant);
 
+        // 실시간 알림
         notificationService.notifyUserOnRejection(
                 matchGroup.getGroupName(),
                 participant.getUser().getUsername()
         );
+
+        // FCM 푸시 알림
+        UserEntity target = participant.getUser();
+        if (target.getPushToken() != null) {
+            fcmService.sendPush(
+                    target.getPushToken(),
+                    "❌ 참가 거절 안내",
+                    "[" + matchGroup.getGroupName() + "] 참가가 거절되었습니다."
+            );
+        }
     }
 
     // 참가자 강퇴

@@ -1,5 +1,6 @@
 package com.swings.user.repository;
 
+import com.swings.user.entity.UserEntity;
 import com.swings.user.entity.UserPointEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,4 +14,6 @@ public interface UserPointRepository extends JpaRepository<UserPointEntity, Long
     @Query("SELECT p FROM UserPointEntity p WHERE p.user.username = :username ORDER BY p.createdAt DESC")
     List<UserPointEntity> findPointLogByUsername(@Param("username") String username);
 
+    @Query("SELECT u FROM UserEntity u WHERE u.username = :username")
+    UserEntity findByUsername(@Param("username") String username);
 }

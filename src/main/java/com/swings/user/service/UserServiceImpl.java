@@ -5,6 +5,7 @@ import com.swings.user.dto.UserDTO;
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -252,10 +253,9 @@ public class UserServiceImpl implements UserService {
 
     //비밀번호 리셋
     @Override
-    public void resetPassword(String username, String email) {
-        // ✅ username + email 둘 다 일치하는 사용자 찾기
-        UserEntity user = userRepository.findByUsernameAndEmail(username, email)
-                .orElseThrow(() -> new IllegalArgumentException("아이디 또는 이메일이 일치하지 않습니다."));
+    public void resetPassword(String username) {
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("가입된 아이디가 아닙니다."));
 
         // ✅ 임시 비밀번호 생성 (8자리)
         String tempPassword = UUID.randomUUID().toString().substring(0, 8);
@@ -268,5 +268,13 @@ public class UserServiceImpl implements UserService {
         emailService.sendTemporaryPassword(user, tempPassword);
     }
 
+    // 푸쉬 알림용 토큰
+    @Override
+    public void updatePushToken(String username, String token) {
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + username));
+        user.setPushToken(token);
+        userRepository.save(user);
+    }
 
 }

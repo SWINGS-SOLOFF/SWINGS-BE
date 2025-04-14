@@ -134,20 +134,18 @@ public class UserController {
     public ResponseEntity<String> usePoints(
             @RequestParam int amount,
             @RequestParam(defaultValue = "포인트 사용") String description) {
-        try {
-            String username = userService.getCurrentUser().getUsername();
-            userPointService.usePoint(username, amount, description);
-            return ResponseEntity.ok("포인트 사용 완료");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage()); // 💥 400으로 리턴 이거 안쓰면 500으로 리턴해서 포인트 부족 감지 못함
-        }
+
+        String username = userService.getCurrentUser().getUsername();
+        userPointService.usePoint(username, amount, description);
+
+        return ResponseEntity.ok("포인트 사용 완료");
     }
 
     //비밀번호 설정
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody PasswordResetRequestDTO request) {
         try {
-            userService.resetPassword(request.getUsername(), request.getEmail());
+            userService.resetPassword(request.getUsername());
             return ResponseEntity.ok("임시 비밀번호가 이메일로 전송되었습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

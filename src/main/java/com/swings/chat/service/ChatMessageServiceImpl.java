@@ -4,6 +4,9 @@ import com.swings.chat.entity.ChatMessageEntity;
 import com.swings.chat.entity.ChatRoomEntity;
 import com.swings.chat.repository.ChatMessageRepository;
 import com.swings.chat.repository.ChatRoomRepository;
+import com.swings.notification.service.FCMService;
+import com.swings.user.entity.UserEntity;
+import com.swings.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +18,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final FCMService fcmService;
+    private final UserRepository userRepository;
 
     // ✅ 특정 채팅방의 모든 메시지 조회
     @Override
@@ -44,7 +49,24 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .content(content)
                 .build();
 
-        return chatMessageRepository.save(message);
+        ChatMessageEntity savedMessage = chatMessageRepository.save(message);
+
+        String receiverUsername = chatRoom.getUser1().equals(sender)
+                ? chatRoom.getUser2()
+                : chatRoom.getUser1();
+
+        UserEntity receiver = userRepository.findByUsername(receiverUsername).orElse(null);
+
+        if (receiver != null && receiver.getPushToken() != null) {
+            String preview = content.length() > 20 ? content.substring(0, 20) + "..." : content;
+            fcmService.sendPush(
+                    receiver.getPushToken(),
+                    "💬 새 메시지",
+                    sender + ": " + preview
+            );
+        }
+
+        return savedMessage;
     }
 
 }
