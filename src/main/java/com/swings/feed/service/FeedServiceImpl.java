@@ -42,9 +42,9 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedDTO> getAllFeeds(Pageable pageable) {
+    public List<FeedDTO> getAllFeeds(Pageable pageable, Long currentUserId) {
         return feedRepository.findAll(pageable).stream()
-                .map(feed -> convertToDTO(feed, null))
+                .map(feed -> convertToDTO(feed, currentUserId))
                 .collect(Collectors.toList());
     }
 
@@ -77,8 +77,12 @@ public class FeedServiceImpl implements FeedService {
         FeedEntity feed = getFeedEntityOrThrow(feedId);
         UserEntity user = getUserEntityOrThrow(userId);
 
-        if (feed.getLikedUsers().add(user)) {
-            feed.setLikes(feed.getLikes() + 1);
+        boolean alreadyLiked = feed.getLikedUsers().stream()
+                .anyMatch(u -> u.getUserId().equals(userId));
+
+        if (!alreadyLiked) {
+            feed.getLikedUsers().add(user);
+            feed.setLikes(feed.getLikedUsers().size());
 
             // 피드 작성자에게 푸시 알림 전송
             UserEntity owner = feed.getUser();
@@ -156,9 +160,13 @@ public class FeedServiceImpl implements FeedService {
     @Override
     public List<Long> getFolloweeIds(Long userId) {
         return socialService.getFollowing(userId).stream()
-                .map(SocialDTO::getFollowee)
-                .map(UserDTO::getUserId)
-                .collect(Collectors.toList());
+            .map(UserDTO::getUserId)
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<FeedDTO> getAllFeeds(Pageable pageable) {
+        return getAllFeeds(pageable, null);
     }
 
     private FeedEntity getFeedEntityOrThrow(Long feedId) {
@@ -172,8 +180,8 @@ public class FeedServiceImpl implements FeedService {
     }
 
 
-
-    private FeedDTO convertToDTO(FeedEntity feed, Long currentUserId) {
+    @Override
+    public FeedDTO convertToDTO(FeedEntity feed, Long currentUserId) {
         boolean liked = currentUserId != null &&
                 feed.getLikedUsers().stream()
                         .anyMatch(user -> user.getUserId().equals(currentUserId));
