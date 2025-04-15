@@ -69,29 +69,23 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
                 .joinAt(LocalDateTime.now())
                 .build();
 
-        log.info("🚩1 - 참가자 저장 시작");
         MatchParticipantEntity saved = matchParticipantRepository.save(participant);
-        log.info("🚩2 - 참가자 저장 완료");
 
         // 실시간 웹 알림
-        log.info("🚩3 - 웹소켓 알림 시작");
         notificationService.notifyHostOnJoinRequest(
                 matchGroup.getGroupName(),
                 matchGroup.getHost().getUsername(),
                 user.getUsername()
         );
-        log.info("🚩4 - 웹소켓 알림 완료");
 
         // FCM 푸시 알림
         UserEntity host = matchGroup.getHost();
         if (host.getPushToken() != null) {
-            log.info("🚩5 - FCM 푸시 시작");
             fcmService.sendPush(
                     host.getPushToken(),
                     "⛳ 참가 신청 알림",
                     user.getUsername() + "님이 [" + matchGroup.getGroupName() + "]에 참가 신청했습니다."
             );
-            log.info("🚩6 - FCM 푸시 완료");
         }
         MatchParticipantDTO dto = MatchParticipantDTO.fromEntity(saved);
         enrichUserInfo(dto);

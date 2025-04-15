@@ -32,22 +32,22 @@ public class MatchGroupServiceImpl implements MatchGroupService {
     public MatchGroupDTO createMatchGroup(MatchGroupDTO matchGroupDTO) {
         log.info("그룹 생성 요청: {}", matchGroupDTO);
 
-        // 현재 로그인한 사용자 가져오기
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
-        // 사용자 정보 조회
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("로그인한 사용자를 찾을 수 없습니다."));
 
-        // DTO → Entity 변환 + host 지정
-        MatchGroupEntity matchGroup = matchGroupDTO.toEntity(user);
+        // 성비 유효성 검사
+        int total = matchGroupDTO.getFemaleLimit() + matchGroupDTO.getMaleLimit();
+        if (total != matchGroupDTO.getMaxParticipants()) {
+            throw new IllegalArgumentException("성비 인원 수 합이 최대 인원과 일치하지 않습니다.");
+        }
 
-        // 저장
+        MatchGroupEntity matchGroup = matchGroupDTO.toEntity(user);
         MatchGroupEntity saved = matchGroupRepository.save(matchGroup);
         log.info("그룹 저장 완료, ID: {}", saved.getMatchGroupId());
 
-        // 방장은 자동 참가 처리
         MatchParticipantEntity hostParticipant = MatchParticipantEntity.builder()
                 .matchGroup(saved)
                 .user(user)
@@ -56,9 +56,8 @@ public class MatchGroupServiceImpl implements MatchGroupService {
                 .build();
         matchParticipantRepository.save(hostParticipant);
 
-        log.info("그룹 저장 및 방장 참가자 등록 완료, ID: {}", saved.getMatchGroupId());
+        log.info("방장 자동 참가 처리 완료");
 
-        // Entity → DTO
         return MatchGroupDTO.fromEntity(saved);
     }
 

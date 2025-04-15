@@ -2,6 +2,7 @@ package com.swings.matchgroup.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.swings.matchgroup.entity.MatchParticipantEntity;
+import com.swings.user.entity.UserEntity;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -57,15 +58,25 @@ public class MatchParticipantDTO {
     private String region;
 
 
-    // Entity → DTO 변환 (기본 필드만 포함)
+    // Entity → DTO 변환
     public static MatchParticipantDTO fromEntity(MatchParticipantEntity entity) {
+        UserEntity user = entity.getUser();
+
         return MatchParticipantDTO.builder()
                 .matchParticipantId(entity.getMatchParticipantId())
                 .matchGroupId(entity.getMatchGroup().getMatchGroupId())
                 .hostId(entity.getMatchGroup().getHost().getUserId())
-                .userId(entity.getUser().getUserId())
+                .userId(user.getUserId())
                 .participantStatus(entity.getParticipantStatus().name())
                 .joinAt(entity.getJoinAt())
+                .username(user.getUsername())
+                .name(user.getName())
+                .mbti(user.getMbti())
+                .job(user.getJob())
+                .userImg(user.getUserImg())
+                .gender(user.getGender().name())
+                .age(user.getKoreanAge())
+                .region(user.getActivityRegion().name())
                 .build();
     }
 }
