@@ -33,5 +33,8 @@ public class ChatRoomController {
         ChatRoomEntity chatRoom = chatRoomService.createOrGetChatRoom(user1, user2, isSuperChat); // ✅ 수정
         return ResponseEntity.ok(chatRoom);
     }
-
+    @PostMapping("/leave")
+    public void leaveRoom(@RequestParam Long roomId, @RequestParam String username) {
+        chatRoomService.leaveChatRoom(roomId, username);
+    }
 }

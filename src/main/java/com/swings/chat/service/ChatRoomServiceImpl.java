@@ -85,4 +85,23 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                     return newRoom;
                 });
     }
+    @Override
+    public void leaveChatRoom(Long roomId, String username) {
+        ChatRoomEntity room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
+
+        boolean changed = false;
+
+        if (username.equals(room.getUser1())) {
+            room.setUser1(null);
+            changed = true;
+        } else if (username.equals(room.getUser2())) {
+            room.setUser2(null);
+            changed = true;
+        }
+
+        if (changed) {
+            chatRoomRepository.save(room);
+        }
+    }
 }
