@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+//피드 관련 CRUD 및 댓글/좋아요 기능 처리 컨트롤러
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/feeds")
@@ -33,21 +34,21 @@ public class FeedController {
     private final FeedService feedService;
     private final UserRepository userRepository;
     private final CommentService commentService;
-    private final FeedRepository feedRepository;
 
     public FeedController(FeedService feedService, UserRepository userRepository,
                           CommentService commentService, FeedRepository feedRepository) {
         this.feedService = feedService;
         this.userRepository = userRepository;
         this.commentService = commentService;
-        this.feedRepository = feedRepository;
     }
-
+    
+    // 피드 등록
     @PostMapping
     public ResponseEntity<FeedDTO> createFeed(@RequestBody FeedDTO feedDTO) {
         return ResponseEntity.ok(feedService.createFeed(feedDTO));
     }
-
+    
+    // 전체 피드 조회
     @GetMapping
     public ResponseEntity<List<FeedDTO>> getFeeds(@RequestParam(required = false) Long userId,
                                                   @RequestParam int page,
@@ -57,7 +58,8 @@ public class FeedController {
         List<FeedDTO> feeds = feedService.getAllFeeds(pageable, userId); 
         return ResponseEntity.ok(feeds);
     }
-
+    
+    // 필터 및 정렬 조건 기반 피드 조회
     @GetMapping("/filtered")
     public ResponseEntity<List<FeedDTO>> getFilteredFeeds(
             @RequestParam Long userId,
@@ -97,6 +99,7 @@ public class FeedController {
         return ResponseEntity.ok(feeds);
     }
 
+    // 메인 피드 조회 (팔로우 유저 -> 모든 유저 랜덤 -> 내 피드 순)
     @GetMapping("/main")
     public ResponseEntity<List<FeedDTO>> getMainFeed(@RequestParam Long userId) {
         Pageable pageable = PageRequest.of(0, 30, Sort.by("createdAt").descending());
@@ -123,12 +126,14 @@ public class FeedController {
 
         return ResponseEntity.ok(result);
     }
-
+    
+    // 특정 유저 피드 조회
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<FeedDTO>> getFeedsByUserId(@PathVariable Long userId) {
         return ResponseEntity.ok(feedService.getFeedsByUserId(userId));
     }
-
+    
+    // 피드 한개 조회
     @GetMapping("/{feedId}")
     public ResponseEntity<FeedDTO> getFeedById(@PathVariable Long feedId) {
         return feedService.getFeedById(feedId)
@@ -136,6 +141,7 @@ public class FeedController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // 피드 수정 (이미지 포함 multipart)
     @PutMapping(value = "/{feedId}", consumes = {"multipart/form-data"})
     public ResponseEntity<FeedDTO> updateFeed(
             @PathVariable Long feedId,
@@ -155,13 +161,15 @@ public class FeedController {
 
         return ResponseEntity.ok(feedService.updateFeed(feedId, updated));
     }
-
+    
+    // 피드 삭제
     @DeleteMapping("/{feedId}")
     public ResponseEntity<Void> deleteFeed(@PathVariable Long feedId) {
         feedService.deleteFeed(feedId);
         return ResponseEntity.noContent().build();
     }
-
+    
+    // 피드 업로드(신규 작성)
     @PostMapping("/upload")
     public ResponseEntity<FeedDTO> uploadFeed(@RequestParam("userId") Long userId,
                                               @RequestParam("content") String content,
@@ -178,7 +186,9 @@ public class FeedController {
 
         return ResponseEntity.ok(feedService.createFeed(feedDTO));
     }
-
+    
+    
+    // 내부 파일 저장 메서드
     private String saveFile(MultipartFile file) {
         String uploadDir = "C:/uploads/";
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
@@ -191,19 +201,22 @@ public class FeedController {
             throw new RuntimeException("File upload failed: " + e.getMessage());
         }
     }
-
+    
+    // 좋아요 등록
     @PutMapping("/{feedId}/like")
     public ResponseEntity<FeedDTO> likeFeed(@PathVariable Long feedId, @RequestParam Long userId) {
         return ResponseEntity.ok(feedService.likeFeed(feedId, userId));
     }
-
+    
+    // 좋아요 취소
     @PutMapping("/{feedId}/unlike")
     public ResponseEntity<FeedDTO> unlikeFeed(@PathVariable Long feedId, @RequestParam Long userId) {
         if (feedId == null || userId == null) return ResponseEntity.badRequest().build();
         FeedDTO updatedFeed = feedService.unlikeFeed(feedId, userId);
         return ResponseEntity.ok(updatedFeed);
     }
-
+    
+    // 댓글 등록
     @PostMapping("/{feedId}/comments")
     public ResponseEntity<CommentDTO> addComment(@PathVariable Long feedId,
                                                  @RequestParam Long userId,
@@ -211,25 +224,29 @@ public class FeedController {
         CommentEntity comment = commentService.addComment(feedId, userId, content);
         return ResponseEntity.ok(convertToDTO(comment));
     }
-
+    
+    // 댓글 삭제
     @DeleteMapping("/{feedId}/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(@PathVariable Long feedId, @PathVariable Long commentId) {
         commentService.deleteComment(commentId);
         return ResponseEntity.noContent().build();
     }
-
+    
+    // 댓글 조회
     @GetMapping("/{feedId}/comments")
     public ResponseEntity<List<CommentDTO>> getCommentsByFeedId(@PathVariable Long feedId) {
         List<CommentEntity> comments = commentService.getCommentsByFeedId(feedId);
         List<CommentDTO> commentDTOs = comments.stream().map(this::convertToDTO).collect(Collectors.toList());
         return ResponseEntity.ok(commentDTOs);
     }
-
+    
+    // 좋아요한 사용자 목록
     @GetMapping("/{feedId}/liked-users")
     public ResponseEntity<List<UserDTO>> getLikedUsers(@PathVariable Long feedId) {
         return ResponseEntity.ok(feedService.getLikedUsers(feedId));
     }
-
+    
+    // 댓글 Entity -> DTO 변환
     private CommentDTO convertToDTO(CommentEntity comment) {
         return CommentDTO.builder()
                 .commentId(comment.getCommentId())
@@ -242,9 +259,6 @@ public class FeedController {
                 )
                 .build();
     }
-
-    @Getter @Setter
-    public static class UserIdRequest {
-        private Long userId;
-    }
+    
+    
 }

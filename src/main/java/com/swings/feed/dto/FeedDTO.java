@@ -9,22 +9,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// 게시물 정보 프론트엔드로 전달하는 DTO 클래스
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class FeedDTO {
-    private Long feedId;
-    private Long userId;
-    private String username;
-    private String imageUrl;
-    private String caption;
-    private LocalDateTime createdAt;
-    private int likes;
-    private boolean liked;
-    private String userProfilePic;
-    private List<CommentDTO> comments = new ArrayList<>();
+    private Long feedId;               // 피드 ID
+    private Long userId;               // 작성자 ID
+    private String username;           // 작성자 이름
+    private String imageUrl;           // 이미지 URL
+    private String caption;            // 게시물 내용
+    private LocalDateTime createdAt;   // 생성 시간
+    private int likes;                 // 좋아요 수
+    private boolean liked;             // 로그인 유저의 좋아요 여부
+    private String userProfilePic;     // 작성자 프로필 이미지
+    private List<CommentDTO> comments = new ArrayList<>(); // 댓글 목록
 
     // FeedEntity 객체를 받아서 FeedDTO로 변환하는 생성자
     public FeedDTO(FeedEntity feedEntity, boolean liked) {
