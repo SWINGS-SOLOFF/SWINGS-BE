@@ -40,7 +40,6 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
             dto.setUserImg(user.getUserImg());
             dto.setGender(user.getGender().name());
             dto.setRegion(user.getActivityRegion().name());
-            // 한국식 나이
             int currentYear = LocalDate.now().getYear();
             dto.setAge(currentYear - user.getBirthDate().getYear() + 1);
         });
@@ -71,22 +70,23 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
 
         MatchParticipantEntity saved = matchParticipantRepository.save(participant);
 
-        // 실시간 웹 알림
-        notificationService.notifyHostOnJoinRequest(
-                matchGroup.getGroupName(),
-                matchGroup.getHost().getUsername(),
-                user.getUsername()
-        );
-
-        // FCM 푸시 알림
-        UserEntity host = matchGroup.getHost();
-        if (host.getPushToken() != null) {
-            fcmService.sendPush(
-                    host.getPushToken(),
-                    "⛳ 참가 신청 알림",
-                    user.getUsername() + "님이 [" + matchGroup.getGroupName() + "]에 참가 신청했습니다."
+        // 방장이 아닐 때만 알림 전송
+        if (!user.getUserId().equals(matchGroup.getHost().getUserId())) {
+            notificationService.notifyHostOnJoinRequest(
+                    matchGroup.getGroupName(),
+                    matchGroup.getHost().getUsername(),
+                    user.getUsername()
             );
+
+            if (matchGroup.getHost().getPushToken() != null) {
+                fcmService.sendPush(
+                        matchGroup.getHost().getPushToken(),
+                        "⛳ 참가 신청 알림",
+                        user.getUsername() + "님이 [" + matchGroup.getGroupName() + "]에 참가 신청했습니다."
+                );
+            }
         }
+
         MatchParticipantDTO dto = MatchParticipantDTO.fromEntity(saved);
         enrichUserInfo(dto);
         return dto;
@@ -107,7 +107,7 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         matchParticipantRepository.delete(participant);
     }
 
-    // 참가 신청 승인(방장)
+    // 참가 승인
     @Override
     @Transactional
     public void approveParticipant(Long matchGroupId, Long matchParticipantId, Long hostUserId) {
@@ -127,13 +127,11 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         participant.setParticipantStatus(MatchParticipantEntity.ParticipantStatus.ACCEPTED);
         matchParticipantRepository.save(participant);
 
-        // 실시간 알림
         notificationService.notifyUserOnApproval(
                 matchGroup.getGroupName(),
                 participant.getUser().getUsername()
         );
 
-        // FCM 푸시 알림
         UserEntity target = participant.getUser();
         if (target.getPushToken() != null) {
             fcmService.sendPush(
@@ -144,7 +142,7 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         }
     }
 
-    // 참가 신청 거절(방장)
+    // 참가 거절
     @Override
     @Transactional
     public void rejectParticipant(Long matchGroupId, Long matchParticipantId, Long hostUserId) {
@@ -164,13 +162,11 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         participant.setParticipantStatus(MatchParticipantEntity.ParticipantStatus.REJECTED);
         matchParticipantRepository.save(participant);
 
-        // 실시간 알림
         notificationService.notifyUserOnRejection(
                 matchGroup.getGroupName(),
                 participant.getUser().getUsername()
         );
 
-        // FCM 푸시 알림
         UserEntity target = participant.getUser();
         if (target.getPushToken() != null) {
             fcmService.sendPush(
@@ -181,7 +177,7 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         }
     }
 
-    // 참가자 강퇴
+    // 강퇴
     @Override
     @Transactional
     public void removeParticipant(Long matchGroupId, Long userId, Long hostUserId) {
@@ -201,7 +197,7 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         matchParticipantRepository.delete(participant);
     }
 
-    // 특정 방의 참가 신청자 목록 조회
+    // 참가자 목록 조회
     @Override
     public List<MatchParticipantDTO> getParticipantsByMatchGroupId(Long matchGroupId) {
         return matchParticipantRepository.findByMatchGroupMatchGroupId(matchGroupId)
@@ -214,7 +210,7 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
                 .collect(Collectors.toList());
     }
 
-    // 특정 방의 참가자 목록 조회
+    // 승인된 참가자 목록 조회
     @Override
     public List<MatchParticipantDTO> getAcceptedParticipants(Long matchGroupId) {
         return matchParticipantRepository.findByMatchGroupMatchGroupIdAndParticipantStatus(
@@ -229,7 +225,7 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
                 .collect(Collectors.toList());
     }
 
-    // 나의 참가 그룹 및 신청, 과거 이력 조회
+    // 나의 참가 그룹 조회
     @Override
     public List<MatchParticipantDTO> getMyGroups(MatchParticipantDTO request) {
         Long userId = request.getUserId();
@@ -244,7 +240,6 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         if (status != null && !status.isEmpty()) {
             MatchParticipantEntity.ParticipantStatus enumStatus =
                     MatchParticipantEntity.ParticipantStatus.valueOf(status.toUpperCase());
-
             result = matchParticipantRepository.findByUser_UserIdAndParticipantStatus(userId, enumStatus);
         } else {
             result = matchParticipantRepository.findByUser_UserId(userId);

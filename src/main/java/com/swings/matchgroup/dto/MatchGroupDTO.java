@@ -5,6 +5,8 @@ import com.swings.matchgroup.entity.MatchGroupEntity;
 import com.swings.user.entity.UserEntity;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,6 +23,9 @@ public class MatchGroupDTO {
     @JsonProperty("hostUsername")
     private String hostUsername;
 
+    @JsonProperty("participants")
+    private List<MatchParticipantDTO> participants;
+
     private String groupName;
     private String location;
     private Double latitude;
@@ -35,8 +40,8 @@ public class MatchGroupDTO {
     private int maxParticipants;
     private String matchType;
 
-    // Entity → DTO
-    public static MatchGroupDTO fromEntity(MatchGroupEntity entity) {
+    // Entity → DTO (with participants)
+    public static MatchGroupDTO fromEntity(MatchGroupEntity entity, List<MatchParticipantDTO> participants) {
         return MatchGroupDTO.builder()
                 .matchGroupId(entity.getMatchGroupId())
                 .hostId(entity.getHost().getUserId())
@@ -54,6 +59,7 @@ public class MatchGroupDTO {
                 .description(entity.getDescription())
                 .maxParticipants(entity.getMaxParticipants())
                 .matchType(entity.getMatchType())
+                .participants(participants)
                 .build();
     }
 
@@ -77,7 +83,7 @@ public class MatchGroupDTO {
                 .build();
     }
 
-    // Projection → DTO
+    // Projection → DTO (근처 그룹 전용)
     public static MatchGroupDTO fromProjection(MatchGroupNearbyProjection projection) {
         return MatchGroupDTO.builder()
                 .matchGroupId(projection.getMatchGroupId())

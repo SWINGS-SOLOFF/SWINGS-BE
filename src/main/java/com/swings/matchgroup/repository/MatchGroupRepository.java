@@ -19,6 +19,9 @@ public interface MatchGroupRepository extends JpaRepository<MatchGroupEntity, Lo
     @Query("SELECT g FROM MatchGroupEntity g JOIN FETCH g.host WHERE g.matchGroupId = :groupId")
     Optional<MatchGroupEntity> findById(@Param("groupId") Long groupId);
 
+    @Query("SELECT g FROM MatchGroupEntity g JOIN FETCH g.host WHERE g.host.userId = :hostId")
+    List<MatchGroupEntity> findByHostUserId(@Param("hostId") Long hostId);
+
 
     // 실제 거리 찾기(지구 반경 고려)
     @Query(value = "SELECT m.match_group_id AS matchGroupId, m.group_name AS groupName, m.location, " +

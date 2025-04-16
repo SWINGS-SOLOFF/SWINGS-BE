@@ -41,6 +41,12 @@ public class MatchGroupController {
         return ResponseEntity.ok(group);  // 특정 그룹 ID 조회
     }
 
+    // 내가 방장인 그룹 찾기
+    @GetMapping("/host/{hostId}")
+    public ResponseEntity<List<MatchGroupDTO>> getGroupsByHost(@PathVariable Long hostId) {
+        return ResponseEntity.ok(matchGroupService.getGroupsByHost(hostId));
+    }
+
     // 근처 그룹 찾기
     @GetMapping("/nearby")
     public ResponseEntity<List<MatchGroupDTO>> getNearbyGroups(

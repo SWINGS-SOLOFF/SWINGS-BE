@@ -13,5 +13,7 @@ public interface MatchGroupService {
     MatchGroupDTO getMatchGroupById(Long groupId);
     // 근처 그룹 찾기
     List<MatchGroupDTO> findNearbyGroups(double latitude, double longitude, double radiusInKm);
+    // 내가 방장인 그룹 찾기
+    List<MatchGroupDTO> getGroupsByHost(Long hostId);
 
 }
