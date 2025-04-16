@@ -6,11 +6,17 @@ import com.swings.chat.repository.UserLikeRepository;
 import com.swings.notification.service.FCMService;
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
+import com.swings.user.service.UserPointService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +27,7 @@ public class UserLikeServiceImpl implements UserLikeService {
     private final ChatRoomService chatRoomService;
     private final UserRepository userRepository;
     private final FCMService fcmService;
+    private final UserPointService userPointService;
 
     @Override
     @Transactional
@@ -43,6 +50,9 @@ public class UserLikeServiceImpl implements UserLikeService {
                     );
                 }
             });
+        }else{
+            return;
+
         }
 
         // 채팅방 생성 및 알림 전송
@@ -97,5 +107,57 @@ public class UserLikeServiceImpl implements UserLikeService {
                     .isMutual(isMutual)
                     .build();
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserLikeEntity> getLikesReceived(String toUserId) {
+        return userLikeRepository.findByToUserId(toUserId);
+    }
+
+    @Override
+    public Map<String, List<SentLikeDTO>> getSentAndReceivedLikes(String userId) {
+        List<UserLikeEntity> sentLikes = userLikeRepository.findByFromUserId(userId);
+        List<UserLikeEntity> receivedLikes = userLikeRepository.findByToUserId(userId);
+
+        List<SentLikeDTO> sentResult = sentLikes.stream().map(like -> {
+            UserEntity toUser = userRepository.findByUsername(like.getToUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
+            boolean isMutual = userLikeRepository.existsByFromUserIdAndToUserId(like.getToUserId(), userId);
+            return SentLikeDTO.builder()
+                    .username(toUser.getUsername())
+                    .name(toUser.getName())
+                    .userImg(toUser.getUserImg())
+                    .isMutual(isMutual)
+                    .build();
+        }).collect(Collectors.toList());
+
+        List<SentLikeDTO> receivedResult = receivedLikes.stream().map(like -> {
+            UserEntity fromUser = userRepository.findByUsername(like.getFromUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
+            boolean isMutual = userLikeRepository.existsByFromUserIdAndToUserId(userId, fromUser.getUsername());
+            return SentLikeDTO.builder()
+                    .username(fromUser.getUsername())
+                    .name(fromUser.getName())
+                    .userImg(fromUser.getUserImg())
+                    .isMutual(isMutual)
+                    .build();
+        }).collect(Collectors.toList());
+
+        Map<String, List<SentLikeDTO>> result = new HashMap<>();
+        result.put("sentLikes", sentResult);
+        result.put("receivedLikes", receivedResult);
+        return result;
+    }
+
+    @Override
+    public boolean canSendLike(String username) {
+        LocalDateTime todayStart = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT);
+        int count = userLikeRepository.countByFromUserIdAndCreatedAtAfter(username, todayStart);
+        return count < 3;
+    }
+
+    @Override
+    public int countTodayLikes(String username, LocalDateTime since) {
+        return userLikeRepository.countByFromUserIdAndCreatedAtAfter(username, since);
     }
 }
