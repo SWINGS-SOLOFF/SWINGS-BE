@@ -28,6 +28,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
         return rooms.stream()
                 .map(room -> {
+                    // ✅ 대상 유저 정보 가져오기
                     String targetUsername = room.getUser1().equals(username) ? room.getUser2() : room.getUser1();
                     UserEntity targetUser = userRepository.findByUsername(targetUsername).orElse(null);
 
@@ -43,7 +44,10 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                             .lastMessage(lastMessage != null ? lastMessage.getContent() : null)
                             .lastMessageTime(lastMessage != null ? lastMessage.getSentAt() : null)
                             .unreadCount(unreadCount)
+                            // ✅ 대상 유저 정보 추가
                             .targetName(targetUser != null ? targetUser.getName() : "알 수 없음")
+                            .targetUsername(targetUsername)
+                            .targetImg(targetUser != null ? targetUser.getUserImg() : null)
                             .build();
                 })
                 .sorted((a, b) -> {
@@ -54,13 +58,11 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ 기존 방식 (기본 요청 처리용)
     @Override
     public ChatRoomEntity createOrGetChatRoom(String user1, String user2) {
         return createOrGetChatRoom(user1, user2, false);
     }
 
-    // ✅ 슈퍼챗 여부 포함한 방식
     @Override
     public ChatRoomEntity createOrGetChatRoom(String user1, String user2, boolean isSuperChat) {
         return chatRoomRepository.findByUser1AndUser2(user1, user2)
@@ -85,6 +87,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                     return newRoom;
                 });
     }
+
     @Override
     public void leaveChatRoom(Long roomId, String username) {
         ChatRoomEntity room = chatRoomRepository.findById(roomId)

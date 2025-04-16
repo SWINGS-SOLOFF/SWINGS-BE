@@ -15,6 +15,6 @@ public class UserSelectDTO {
     private String userImg;
     private String introduce;
     private String activityRegion;
-
+    private String targetUserImg;
 
 }
