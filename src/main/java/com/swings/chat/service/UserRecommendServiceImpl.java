@@ -59,8 +59,10 @@ public class UserRecommendServiceImpl implements UserRecommendService {
                 user.getGender() != null ? user.getGender().name() : "UNKNOWN",
                 user.getUserImg(),
                 user.getIntroduce(),
-                user.getActivityRegion() != null ? user.getActivityRegion().name() : "UNKNOWN"
+                user.getActivityRegion() != null ? user.getActivityRegion().name() : "UNKNOWN",
+                user.getUserImg() // ✅ 이게 targetUserImg로 들어감
         )).orElseThrow(() -> new RuntimeException("추천할 사용자가 없습니다."));
+
     }
 
     @Override
