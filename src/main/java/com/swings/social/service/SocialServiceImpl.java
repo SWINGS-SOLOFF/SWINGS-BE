@@ -59,35 +59,25 @@ public class SocialServiceImpl implements SocialService {
     }
 
     @Override
-    public List<SocialDTO> getFollowers(Long userId) {
+    public List<UserDTO> getFollowers(Long userId) {
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
         return socialRepository.findByFollowee(user)
-                .stream()
-                .map(socialEntity -> new SocialDTO(
-                        socialEntity.getFollower().getUserId(),
-                        socialEntity.getFollowee().getUserId(),
-                        convertToUserDTO(socialEntity.getFollower()),
-                        convertToUserDTO(socialEntity.getFollowee())
-                ))
-                .collect(Collectors.toList());
+            .stream()
+            .map(social -> convertToUserDTO(social.getFollower()))
+            .collect(Collectors.toList());
     }
 
     @Override
-    public List<SocialDTO> getFollowing(Long userId) {
+    public List<UserDTO> getFollowing(Long userId) {
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
         return socialRepository.findByFollower(user)
-                .stream()
-                .map(socialEntity -> new SocialDTO(
-                        socialEntity.getFollower().getUserId(),
-                        socialEntity.getFollowee().getUserId(),
-                        convertToUserDTO(socialEntity.getFollower()),
-                        convertToUserDTO(socialEntity.getFollowee())
-                ))
-                .collect(Collectors.toList());
+            .stream()
+            .map(social -> convertToUserDTO(social.getFollowee()))
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -140,8 +130,11 @@ public class SocialServiceImpl implements SocialService {
         return UserDTO.builder()
                 .userId(user.getUserId())
                 .username(user.getUsername())
-                .userImg(user.getUserImg() != null ? user.getUserImg() : "default-image-url")
-                .introduce(user.getIntroduce())
+                .userImg(
+                		  user.getUserImg() != null && !user.getUserImg().trim().equals("") ? 
+                		  user.getUserImg() : 
+                		  null
+                		)                .introduce(user.getIntroduce())
                 .email(user.getEmail())
                 .gender(user.getGender() != null ? user.getGender().toString() : null)
                 .activityRegion(user.getActivityRegion() != null ? user.getActivityRegion().toString() : null)

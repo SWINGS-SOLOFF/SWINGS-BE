@@ -53,9 +53,8 @@ public class FeedController {
                                                   @RequestParam int page,
                                                   @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        List<FeedDTO> feeds = (userId == null)
-                ? feedService.getAllFeeds(pageable)
-                : feedService.getFeedsRandomized(userId, pageable);
+
+        List<FeedDTO> feeds = feedService.getAllFeeds(pageable, userId); 
         return ResponseEntity.ok(feeds);
     }
 
@@ -76,7 +75,7 @@ public class FeedController {
             if (!followeeIds.isEmpty()) {
                 feeds = feedService.getFeedsByUserListExcludingSelf(followeeIds, pageable, userId);
             } else {
-                feeds = feedService.getAllFeeds(pageable).stream()
+                feeds = feedService.getAllFeeds(pageable, userId).stream()
                         .filter(feed -> !feed.getUserId().equals(userId))
                         .collect(Collectors.toList());
 
@@ -84,8 +83,9 @@ public class FeedController {
                     Collections.shuffle(feeds);
                 }
             }
-        } else {
-            feeds = feedService.getAllFeeds(pageable).stream()
+        } 
+        else if ("all".equals(filter)) {
+            feeds = feedService.getAllFeeds(pageable, userId).stream()
                     .filter(feed -> !feed.getUserId().equals(userId))
                     .collect(Collectors.toList());
 
@@ -111,7 +111,7 @@ public class FeedController {
         }
 
         // 2. 전체 랜덤 피드 (팔로우, 본인 제외)
-        List<FeedDTO> latestFeeds = feedService.getAllFeeds(pageable).stream()
+        List<FeedDTO> latestFeeds = feedService.getAllFeeds(pageable, userId).stream()
                 .filter(feed -> !feed.getUserId().equals(userId) && !followeeIds.contains(feed.getUserId()))
                 .collect(Collectors.toList());
 
@@ -136,10 +136,24 @@ public class FeedController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{feedId}")
-    public ResponseEntity<FeedDTO> updateFeed(@PathVariable Long feedId,
-                                              @RequestBody FeedDTO updatedFeedDTO) {
-        return ResponseEntity.ok(feedService.updateFeed(feedId, updatedFeedDTO));
+    @PutMapping(value = "/{feedId}", consumes = {"multipart/form-data"})
+    public ResponseEntity<FeedDTO> updateFeed(
+            @PathVariable Long feedId,
+            @RequestPart("caption") String caption,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
+        FeedDTO existingFeed = feedService.getFeedById(feedId)
+                .orElseThrow(() -> new RuntimeException("Feed not found"));
+        String imageUrl = (file != null && !file.isEmpty()) ? saveFile(file) : existingFeed.getImageUrl();
+
+        FeedDTO updated = FeedDTO.builder()
+                .feedId(feedId)
+                .caption(caption)
+                .imageUrl(imageUrl)
+                .userId(existingFeed.getUserId()) // 그대로 유지
+                .build();
+
+        return ResponseEntity.ok(feedService.updateFeed(feedId, updated));
     }
 
     @DeleteMapping("/{feedId}")
