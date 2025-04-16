@@ -9,6 +9,8 @@ import com.swings.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -55,20 +57,21 @@ public class UserPointServiceImpl implements UserPointService {
 
         UserEntity user = getUser(username);
 
-        // 🔥 핵심 조건: 포인트 부족 시 예외 던져서 400으로 응답 처리
         if (user.getPointBalance() < amount) {
-            throw new IllegalArgumentException("포인트가 부족합니다.");
+            // ✅ 400 에러로 명확히 떨어지게 수정
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "포인트가 부족합니다.");
         }
 
         userPointRepository.save(UserPointEntity.builder()
                 .user(user)
-                .amount(-amount) // 💸 사용은 음수로 기록
+                .amount(-amount)
                 .type(PointType.USE)
                 .description(description)
                 .build());
 
         user.setPointBalance(user.getPointBalance() - amount);
     }
+
 
     private UserEntity getUser(String username) {
         return userRepository.findByUsername(username)
