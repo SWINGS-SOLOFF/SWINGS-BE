@@ -35,8 +35,9 @@ public class MatchGroupEntity {
     @Column(nullable = false)
     private String playStyle; // 플레이 스타일(유쾌한|평범|진지한)
 
-    @Column(nullable = false)
-    private String genderRatio; // 성비
+    @Column(nullable = false) // 성비
+    private int femaleLimit;
+    private int maleLimit;
 
     @Column(nullable = false)
     private String skillLevel; // 실력(초급|중급|고급|상관없음)

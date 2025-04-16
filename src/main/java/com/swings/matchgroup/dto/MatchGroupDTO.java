@@ -5,6 +5,8 @@ import com.swings.matchgroup.entity.MatchGroupEntity;
 import com.swings.user.entity.UserEntity;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,44 +23,25 @@ public class MatchGroupDTO {
     @JsonProperty("hostUsername")
     private String hostUsername;
 
-    @JsonProperty("groupName")
+    @JsonProperty("participants")
+    private List<MatchParticipantDTO> participants;
+
     private String groupName;
-
-    @JsonProperty("location")
     private String location;
-
-    @JsonProperty("latitude")
     private Double latitude;
-
-    @JsonProperty("longitude")
     private Double longitude;
-
-    @JsonProperty("schedule")
     private String schedule;
-
-    @JsonProperty("playStyle")
     private String playStyle;
-
-    @JsonProperty("genderRatio")
-    private String genderRatio;
-
-    @JsonProperty("skillLevel")
+    private int femaleLimit;
+    private int maleLimit;
     private String skillLevel;
-
-    @JsonProperty("ageRange")
     private String ageRange;
-
-    @JsonProperty("description")
     private String description;
-
-    @JsonProperty("maxParticipants")
     private int maxParticipants;
-
-    @JsonProperty("matchType")
     private String matchType;
 
-    // Entity → DTO 변환 (일반 조회용)
-    public static MatchGroupDTO fromEntity(MatchGroupEntity entity) {
+    // Entity → DTO (with participants)
+    public static MatchGroupDTO fromEntity(MatchGroupEntity entity, List<MatchParticipantDTO> participants) {
         return MatchGroupDTO.builder()
                 .matchGroupId(entity.getMatchGroupId())
                 .hostId(entity.getHost().getUserId())
@@ -69,16 +52,18 @@ public class MatchGroupDTO {
                 .longitude(entity.getLongitude())
                 .schedule(entity.getSchedule())
                 .playStyle(entity.getPlayStyle())
-                .genderRatio(entity.getGenderRatio())
+                .femaleLimit(entity.getFemaleLimit())
+                .maleLimit(entity.getMaleLimit())
                 .skillLevel(entity.getSkillLevel())
                 .ageRange(entity.getAgeRange())
                 .description(entity.getDescription())
                 .maxParticipants(entity.getMaxParticipants())
                 .matchType(entity.getMatchType())
+                .participants(participants)
                 .build();
     }
 
-    // DTO → Entity 변환 (그룹 생성 시 사용)
+    // DTO → Entity
     public MatchGroupEntity toEntity(UserEntity host) {
         return MatchGroupEntity.builder()
                 .host(host)
@@ -88,7 +73,8 @@ public class MatchGroupDTO {
                 .longitude(longitude)
                 .schedule(schedule)
                 .playStyle(playStyle)
-                .genderRatio(genderRatio)
+                .femaleLimit(femaleLimit)
+                .maleLimit(maleLimit)
                 .skillLevel(skillLevel)
                 .ageRange(ageRange)
                 .description(description)
@@ -97,7 +83,7 @@ public class MatchGroupDTO {
                 .build();
     }
 
-    // Projection → DTO 변환 (근처 그룹 조회 전용)
+    // Projection → DTO (근처 그룹 전용)
     public static MatchGroupDTO fromProjection(MatchGroupNearbyProjection projection) {
         return MatchGroupDTO.builder()
                 .matchGroupId(projection.getMatchGroupId())
@@ -106,7 +92,7 @@ public class MatchGroupDTO {
                 .latitude(projection.getLatitude())
                 .longitude(projection.getLongitude())
                 .schedule(projection.getSchedule())
-                .hostUsername(projection.getHostUsername()) // hostId는 Projection에 없음
+                .hostUsername(projection.getHostUsername())
                 .build();
     }
 }
