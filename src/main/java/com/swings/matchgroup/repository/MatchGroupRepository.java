@@ -13,15 +13,17 @@ import java.util.Optional;
 @Repository
 public interface MatchGroupRepository extends JpaRepository<MatchGroupEntity, Long> {
 
-    @Query("SELECT m FROM MatchGroupEntity m JOIN FETCH m.host")
+    // 모든 매치그룹 조회
+    @Query("SELECT m FROM MatchGroupEntity m JOIN FETCH m.host WHERE m.deleted = false")
     List<MatchGroupEntity> findAllWithHost();
 
-    @Query("SELECT g FROM MatchGroupEntity g JOIN FETCH g.host WHERE g.matchGroupId = :groupId")
+    // 매치그룹 ID로 조회
+    @Query("SELECT g FROM MatchGroupEntity g JOIN FETCH g.host WHERE g.matchGroupId = :groupId AND g.deleted = false")
     Optional<MatchGroupEntity> findById(@Param("groupId") Long groupId);
 
-    @Query("SELECT g FROM MatchGroupEntity g JOIN FETCH g.host WHERE g.host.userId = :hostId")
+    // 호스트 ID로 조회
+    @Query("SELECT g FROM MatchGroupEntity g JOIN FETCH g.host WHERE g.host.userId = :hostId AND g.deleted = false")
     List<MatchGroupEntity> findByHostUserId(@Param("hostId") Long hostId);
-
 
     // 실제 거리 찾기(지구 반경 고려)
     @Query(value = "SELECT m.match_group_id AS matchGroupId, m.group_name AS groupName, m.location, " +
