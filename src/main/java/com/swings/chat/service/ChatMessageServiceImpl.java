@@ -1,5 +1,6 @@
 package com.swings.chat.service;
 
+import com.swings.chat.dto.ChatMessageDTO;
 import com.swings.chat.entity.ChatMessageEntity;
 import com.swings.chat.entity.ChatRoomEntity;
 import com.swings.chat.repository.ChatMessageRepository;
@@ -38,6 +39,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         unreadMessages.forEach(msg -> msg.setRead(true));
         chatMessageRepository.saveAll(unreadMessages);
     }
+
+    // ✅ 기본 저장 로직 (FCM 포함, 내부 재사용 가능)
     @Override
     public ChatMessageEntity saveMessage(Long roomId, String sender, String content) {
         ChatRoomEntity chatRoom = chatRoomRepository.findById(roomId)
@@ -51,6 +54,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         ChatMessageEntity savedMessage = chatMessageRepository.save(message);
 
+        // 📲 푸시알림 전송
         String receiverUsername = chatRoom.getUser1().equals(sender)
                 ? chatRoom.getUser2()
                 : chatRoom.getUser1();
@@ -69,4 +73,39 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         return savedMessage;
     }
 
+    // ✅ WebSocket 전용: 저장 + senderName 포함된 DTO 반환
+    @Override
+    public ChatMessageDTO saveAndReturnDTO(Long roomId, String sender, String content) {
+        ChatMessageEntity saved = saveMessage(roomId, sender, content);
+
+        UserEntity senderUser = userRepository.findByUsername(sender)
+                .orElse(null);
+
+        return ChatMessageDTO.builder()
+                .roomId(saved.getChatRoom().getRoomId())
+                .sender(saved.getSender())
+                .senderName(senderUser != null ? senderUser.getName() : saved.getSender())
+                .content(saved.getContent())
+                .sentAt(saved.getSentAt())
+                .build();
+    }
+
+    // ✅ 전체 메시지를 DTO 리스트로 변환해서 반환
+    @Override
+    public List<ChatMessageDTO> getMessageDTOsByRoomId(Long roomId) {
+        List<ChatMessageEntity> messages = chatMessageRepository.findByChatRoom_RoomIdOrderBySentAtAsc(roomId);
+
+        return messages.stream().map(msg -> {
+            UserEntity senderUser = userRepository.findByUsername(msg.getSender())
+                    .orElse(null);
+
+            return ChatMessageDTO.builder()
+                    .roomId(msg.getChatRoom().getRoomId())
+                    .sender(msg.getSender())
+                    .senderName(senderUser != null ? senderUser.getName() : msg.getSender())
+                    .content(msg.getContent())
+                    .sentAt(msg.getSentAt())
+                    .build();
+        }).toList();
+    }
 }

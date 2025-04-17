@@ -1,5 +1,11 @@
 package com.swings.user.entity;
 
+import com.swings.email.entity.UserVerifyEntity;
+import com.swings.feed.entity.CommentEntity;
+import com.swings.feed.entity.FeedEntity;
+import com.swings.matchgroup.entity.MatchGroupEntity;
+import com.swings.matchgroup.entity.MatchParticipantEntity;
+import com.swings.social.entity.SocialEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -98,13 +104,34 @@ public class UserEntity {
     @Column(length = 512)
     private String pushToken;
 
-
+    //Cascade 관리
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserPointEntity> pointHistory;
 
+    @OneToMany(mappedBy = "follower", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<SocialEntity> followingList;
+
+    @OneToMany(mappedBy = "followee", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<SocialEntity> followerList;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<UserVerifyEntity> userVerifyList;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<FeedEntity> feeds;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<CommentEntity> comments;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<MatchParticipantEntity> matchParticipations;
+
+    @OneToMany(mappedBy = "host", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<MatchGroupEntity> createdGroups;
 
 
-    // ✅ `createdAt`이 NULL이면 자동 설정 (JPA에서 NULL 방지)
+
+    // `createdAt`이 NULL이면 자동 설정 (JPA에서 NULL 방지)
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
@@ -114,7 +141,7 @@ public class UserEntity {
 
 
 
-    // 🔹 Enum 변환 메서드 추가
+    // Enum 변환 메서드 추가
     public enum GolfSkill {
         beginner, intermediate, advanced;
 
@@ -174,7 +201,7 @@ public class UserEntity {
         }
     }
 
-    // 🎯 한국식 나이 계산 메서드
+    // 한국식 나이 계산 메서드
     public int getKoreanAge() {
         int currentYear = LocalDate.now().getYear();
         int birthYear = this.birthDate.getYear();

@@ -14,6 +14,7 @@
     import org.springframework.security.core.Authentication;
     import org.springframework.security.core.context.SecurityContextHolder;
     import org.springframework.stereotype.Service;
+    import org.springframework.transaction.annotation.Transactional;
 
     import java.time.LocalDateTime;
     import java.util.List;
@@ -28,7 +29,7 @@
         private final UserRepository userRepository;
         private final MatchParticipantRepository matchParticipantRepository;
 
-        // 1. 그룹 생성
+        // 그룹 생성
         @Override
         public MatchGroupDTO createMatchGroup(MatchGroupDTO matchGroupDTO) {
             log.info("그룹 생성 요청: {}", matchGroupDTO);
@@ -66,7 +67,7 @@
             return MatchGroupDTO.fromEntity(saved, participantDTOs);
         }
 
-        // 2. 전체 그룹 목록 조회
+        // 전체 그룹 목록 조회
         @Override
         public List<MatchGroupDTO> getAllMatchGroups() {
             log.info("전체 방 목록 조회 요청 실행");
@@ -86,7 +87,7 @@
                     .collect(Collectors.toList());
         }
 
-        // 3. 그룹 상세 조회 (by ID)
+        // 그룹 상세 조회 (by ID)
         @Override
         public MatchGroupDTO getMatchGroupById(Long groupId) {
             log.info("ID {}의 방 조회 요청", groupId);
@@ -105,7 +106,32 @@
             return MatchGroupDTO.fromEntity(groupEntity, participantDTOs);
         }
 
-        // 5. 내가 방장인 그룹 찾기
+        // 모집 상태 변경
+        @Override
+        @Transactional
+        public void updateGroupStatus(Long groupId, boolean closed) {
+            MatchGroupEntity group = matchGroupRepository.findById(groupId)
+                    .orElseThrow(() -> new RuntimeException("그룹을 찾을 수 없습니다."));
+            group.setClosed(closed);
+            matchGroupRepository.save(group);
+        }
+
+        // 그룹 삭제 (방장만 가능)
+        @Override
+        @Transactional
+        public void deleteGroup(Long groupId, Long userId) {
+            MatchGroupEntity group = matchGroupRepository.findById(groupId)
+                    .orElseThrow(() -> new RuntimeException("그룹을 찾을 수 없습니다."));
+
+            if (!group.getHost().getUserId().equals(userId)) {
+                throw new RuntimeException("방장만 그룹을 삭제할 수 있습니다.");
+            }
+
+            group.setDeleted(true); // 소프트 삭제 처리
+            matchGroupRepository.save(group);
+        }
+
+        // 내가 방장인 그룹 찾기
         @Override
         public List<MatchGroupDTO> getGroupsByHost(Long hostId) {
             log.info("방장 ID {}가 생성한 그룹 목록 조회", hostId);
@@ -124,8 +150,7 @@
                     .collect(Collectors.toList());
         }
 
-
-        // 6. 근처 그룹 찾기
+        // 근처 그룹 찾기
         @Override
         public List<MatchGroupDTO> findNearbyGroups(double latitude, double longitude, double radiusInKm) {
             List<MatchGroupNearbyProjection> results = matchGroupRepository
@@ -135,4 +160,6 @@
                     .map(MatchGroupDTO::fromProjection)
                     .collect(Collectors.toList());
         }
+
+
     }
