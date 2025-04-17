@@ -24,8 +24,9 @@ public class ChatController {
     }
 
     @GetMapping("/messages/{roomId}")
-    public List<ChatMessageEntity> getMessages(@PathVariable Long roomId) {
-        return chatMessageService.getMessagesByRoomId(roomId);
+    public ResponseEntity<List<ChatMessageDTO>> getMessages(@PathVariable Long roomId) {
+        List<ChatMessageDTO> messages = chatMessageService.getMessageDTOsByRoomId(roomId);
+        return ResponseEntity.ok(messages);
     }
     @PostMapping("/messages/read")
     public ResponseEntity<Void> markMessagesAsRead(
