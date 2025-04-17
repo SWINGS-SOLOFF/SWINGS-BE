@@ -232,6 +232,17 @@ public class FeedController {
         return ResponseEntity.noContent().build();
     }
     
+    // 댓글 수정
+    @PatchMapping("/{feedId}/comments/{commentId}")
+    public ResponseEntity<CommentDTO> updateComment(
+            @PathVariable Long feedId,
+            @PathVariable Long commentId,
+            @RequestParam String content) {
+
+        CommentEntity updated = commentService.updateComment(commentId, content);
+        return ResponseEntity.ok(convertToDTO(updated));
+    }
+    
     // 댓글 조회
     @GetMapping("/{feedId}/comments")
     public ResponseEntity<List<CommentDTO>> getCommentsByFeedId(@PathVariable Long feedId) {
