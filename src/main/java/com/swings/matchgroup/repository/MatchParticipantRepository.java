@@ -9,22 +9,30 @@ import java.util.List;
 @Repository
 public interface MatchParticipantRepository extends JpaRepository<MatchParticipantEntity, Long> {
 
-    // 특정 그룹에 참가한 사용자 여부 확인
+    // 참가 여부 확인
     boolean existsByMatchGroup_MatchGroupIdAndUser_UserId(Long matchGroupId, Long userId);
 
-    // 특정 그룹의 전체 참가자 조회 (Entity 불러오지 않고 ID로 조회)
+    // 전체 참가자 조회 (상태 무관)
     List<MatchParticipantEntity> findByMatchGroupMatchGroupId(Long matchGroupId);
 
-    // 특정 그룹의 승인된 참가자만 조회
+    // 상태별 참가자 조회
     List<MatchParticipantEntity> findByMatchGroupMatchGroupIdAndParticipantStatus(
             Long matchGroupId,
             MatchParticipantEntity.ParticipantStatus participantStatus
     );
 
-    // 나의 참가 그룹 및 신청, 과거 이력 조회
+    // 특정 사용자의 모든 이력 조회
     List<MatchParticipantEntity> findByUser_UserId(Long userId);
 
-    // 특정 사용자의 모든 참가자 조회
-    List<MatchParticipantEntity> findByUser_UserIdAndParticipantStatus(Long userId, MatchParticipantEntity.ParticipantStatus status);
+    // 특정 사용자의 상태별 이력 조회
+    List<MatchParticipantEntity> findByUser_UserIdAndParticipantStatus(
+            Long userId,
+            MatchParticipantEntity.ParticipantStatus status
+    );
 
+    // 확정된 참가자 수 조회
+    int countByMatchGroup_MatchGroupIdAndParticipantStatus(
+            Long matchGroupId,
+            MatchParticipantEntity.ParticipantStatus status
+    );
 }
