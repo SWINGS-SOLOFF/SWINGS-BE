@@ -145,7 +145,7 @@ public class UserController {
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody PasswordResetRequestDTO request) {
         try {
-            userService.resetPassword(request.getUsername());
+            userService.resetPassword(request.getUsername(), request.getEmail());
             return ResponseEntity.ok("임시 비밀번호가 이메일로 전송되었습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
