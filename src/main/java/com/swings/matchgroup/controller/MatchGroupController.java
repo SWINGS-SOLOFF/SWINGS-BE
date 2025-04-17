@@ -47,6 +47,20 @@ public class MatchGroupController {
         return ResponseEntity.ok(matchGroupService.getGroupsByHost(hostId));
     }
 
+    // 모집 상태 변경 API
+    @PatchMapping("/{groupId}/status")
+    public ResponseEntity<String> updateGroupStatus(@PathVariable Long groupId, @RequestParam boolean closed) {
+        matchGroupService.updateGroupStatus(groupId, closed);
+        return ResponseEntity.ok(closed ? "모집 종료됨" : "모집 재개됨");
+    }
+
+    // 그룹 삭제 API
+    @DeleteMapping("/{groupId}")
+    public ResponseEntity<String> deleteGroup(@PathVariable Long groupId, @RequestParam Long userId) {
+        matchGroupService.deleteGroup(groupId, userId);
+        return ResponseEntity.ok("그룹이 삭제되었습니다.");
+    }
+
     // 근처 그룹 찾기
     @GetMapping("/nearby")
     public ResponseEntity<List<MatchGroupDTO>> getNearbyGroups(

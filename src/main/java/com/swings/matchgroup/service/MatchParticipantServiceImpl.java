@@ -30,7 +30,6 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
     private final NotificationServiceImpl notificationService;
     private final FCMService fcmService;
 
-    // 공통 유저 정보 세팅
     private void enrichUserInfo(MatchParticipantDTO dto) {
         userRepository.findById(dto.getUserId()).ifPresent(user -> {
             dto.setUsername(user.getUsername());
@@ -45,7 +44,6 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         });
     }
 
-    // 참가 신청
     @Override
     @Transactional
     public MatchParticipantDTO joinMatch(Long matchGroupId, Long userId) {
@@ -70,7 +68,6 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
 
         MatchParticipantEntity saved = matchParticipantRepository.save(participant);
 
-        // 방장이 아닐 때만 알림 전송
         if (!user.getUserId().equals(matchGroup.getHost().getUserId())) {
             notificationService.notifyHostOnJoinRequest(
                     matchGroup.getGroupName(),
@@ -81,7 +78,7 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
             if (matchGroup.getHost().getPushToken() != null) {
                 fcmService.sendPush(
                         matchGroup.getHost().getPushToken(),
-                        "⛳ 참가 신청 알림",
+                        "\u26f3\ufe0f 참가 신청 알림",
                         user.getUsername() + "님이 [" + matchGroup.getGroupName() + "]에 참가 신청했습니다."
                 );
             }
@@ -92,12 +89,10 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         return dto;
     }
 
-    // 참가 신청 취소
     @Override
     @Transactional
     public void leaveMatch(Long matchGroupId, Long userId) {
-        List<MatchParticipantEntity> participants = matchParticipantRepository
-                .findByMatchGroupMatchGroupId(matchGroupId);
+        List<MatchParticipantEntity> participants = matchParticipantRepository.findByMatchGroupMatchGroupId(matchGroupId);
 
         MatchParticipantEntity participant = participants.stream()
                 .filter(p -> p.getUser().getUserId().equals(userId))
@@ -107,7 +102,30 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         matchParticipantRepository.delete(participant);
     }
 
-    // 참가 승인
+    @Override
+    @Transactional
+    public void leaveAcceptedGroup(Long matchGroupId, Long userId) {
+        MatchGroupEntity group = matchGroupRepository.findById(matchGroupId)
+                .orElseThrow(() -> new RuntimeException("그룹을 찾을 수 없습니다."));
+
+        List<MatchParticipantEntity> participants = matchParticipantRepository.findByMatchGroupMatchGroupId(matchGroupId);
+
+        MatchParticipantEntity participant = participants.stream()
+                .filter(p -> p.getUser().getUserId().equals(userId)
+                        && p.getParticipantStatus() == MatchParticipantEntity.ParticipantStatus.ACCEPTED)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("승인된 참가 정보를 찾을 수 없습니다."));
+
+        if (group.getHost().getUserId().equals(userId)) {
+            matchParticipantRepository.deleteAll(participants);
+            matchGroupRepository.delete(group);
+            log.info("\u2705 방장이 방을 나가며 그룹 삭제됨 (groupId={})", matchGroupId);
+        } else {
+            matchParticipantRepository.delete(participant);
+            log.info("\ud83d\udc64 참가 확정 유저가 방 나감 (userId={}, groupId={})", userId, matchGroupId);
+        }
+    }
+
     @Override
     @Transactional
     public void approveParticipant(Long matchGroupId, Long matchParticipantId, Long hostUserId) {
@@ -136,13 +154,12 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         if (target.getPushToken() != null) {
             fcmService.sendPush(
                     target.getPushToken(),
-                    "🎉 참가 승인 완료",
+                    "\ud83c\udf89 참가 승인 완료",
                     "[" + matchGroup.getGroupName() + "] 참가가 승인되었습니다."
             );
         }
     }
 
-    // 참가 거절
     @Override
     @Transactional
     public void rejectParticipant(Long matchGroupId, Long matchParticipantId, Long hostUserId) {
@@ -171,13 +188,12 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         if (target.getPushToken() != null) {
             fcmService.sendPush(
                     target.getPushToken(),
-                    "❌ 참가 거절 안내",
+                    "\u274c 참가 거절 안내",
                     "[" + matchGroup.getGroupName() + "] 참가가 거절되었습니다."
             );
         }
     }
 
-    // 강퇴
     @Override
     @Transactional
     public void removeParticipant(Long matchGroupId, Long userId, Long hostUserId) {
@@ -197,20 +213,6 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
         matchParticipantRepository.delete(participant);
     }
 
-    // 참가자 목록 조회
-    @Override
-    public List<MatchParticipantDTO> getParticipantsByMatchGroupId(Long matchGroupId) {
-        return matchParticipantRepository.findByMatchGroupMatchGroupId(matchGroupId)
-                .stream()
-                .map(entity -> {
-                    MatchParticipantDTO dto = MatchParticipantDTO.fromEntity(entity);
-                    enrichUserInfo(dto);
-                    return dto;
-                })
-                .collect(Collectors.toList());
-    }
-
-    // 승인된 참가자 목록 조회
     @Override
     public List<MatchParticipantDTO> getAcceptedParticipants(Long matchGroupId) {
         return matchParticipantRepository.findByMatchGroupMatchGroupIdAndParticipantStatus(
@@ -225,7 +227,20 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
                 .collect(Collectors.toList());
     }
 
-    // 나의 참가 그룹 조회
+    @Override
+    public List<MatchParticipantDTO> getPendingParticipants(Long matchGroupId) {
+        return matchParticipantRepository.findByMatchGroupMatchGroupIdAndParticipantStatus(
+                        matchGroupId,
+                        MatchParticipantEntity.ParticipantStatus.PENDING
+                ).stream()
+                .map(entity -> {
+                    MatchParticipantDTO dto = MatchParticipantDTO.fromEntity(entity);
+                    enrichUserInfo(dto);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
     @Override
     public List<MatchParticipantDTO> getMyGroups(MatchParticipantDTO request) {
         Long userId = request.getUserId();
@@ -252,5 +267,46 @@ public class MatchParticipantServiceImpl implements MatchParticipantService {
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public int countAcceptedParticipants(Long matchGroupId) {
+        return matchParticipantRepository.countByMatchGroup_MatchGroupIdAndParticipantStatus(
+                matchGroupId,
+                MatchParticipantEntity.ParticipantStatus.ACCEPTED
+        );
+    }
+
+    @Override
+    public boolean canUserJoinGroup(Long matchGroupId, Long userId) {
+        MatchGroupEntity group = matchGroupRepository.findById(matchGroupId)
+                .orElseThrow(() -> new RuntimeException("그룹을 찾을 수 없습니다."));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 모집 종료 여부
+        if (group.isClosed()) return false;
+
+        // 현재 확정 참가자 목록
+        List<MatchParticipantEntity> accepted = matchParticipantRepository
+                .findByMatchGroupMatchGroupIdAndParticipantStatus(
+                        matchGroupId, MatchParticipantEntity.ParticipantStatus.ACCEPTED);
+
+        // 최대 인원 초과 여부
+        if (accepted.size() >= group.getMaxParticipants()) return false;
+
+        // 성비 초과 여부
+        long femaleCount = accepted.stream()
+                .filter(p -> p.getUser().getGender().name().equals("FEMALE"))
+                .count();
+
+        long maleCount = accepted.stream()
+                .filter(p -> p.getUser().getGender().name().equals("MALE"))
+                .count();
+
+        if (user.getGender().name().equals("FEMALE") && femaleCount >= group.getFemaleLimit()) return false;
+        if (user.getGender().name().equals("MALE") && maleCount >= group.getMaleLimit()) return false;
+
+        return true;
     }
 }

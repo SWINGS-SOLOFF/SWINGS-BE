@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/matchParticipant")
@@ -30,7 +31,7 @@ public class MatchParticipantController {
         return ResponseEntity.ok("참가 취소 완료");
     }
 
-    // 참가 신청 승인(방장)
+    // 참가 승인 (방장)
     @PostMapping("/approve")
     public ResponseEntity<String> approveParticipant(@RequestBody MatchParticipantDTO dto) {
         matchParticipantService.approveParticipant(
@@ -41,7 +42,7 @@ public class MatchParticipantController {
         return ResponseEntity.ok("참가 승인 완료");
     }
 
-    // 참가 신청 거절(방장)
+    // 참가 거절 (방장)
     @PostMapping("/reject")
     public ResponseEntity<String> rejectParticipant(@RequestBody MatchParticipantDTO dto) {
         matchParticipantService.rejectParticipant(
@@ -52,39 +53,57 @@ public class MatchParticipantController {
         return ResponseEntity.ok("참가 거절 완료");
     }
 
-    // 참가자 강퇴
+    // 강퇴 (방장)
     @DeleteMapping("/remove")
     public ResponseEntity<String> removeParticipant(@RequestBody MatchParticipantDTO dto) {
         matchParticipantService.removeParticipant(dto.getMatchGroupId(), dto.getUserId(), dto.getHostId());
         return ResponseEntity.ok("강퇴 완료");
     }
 
-    // 특정 방의 참가 신청자 목록 조회(방장)
-    @GetMapping("/list/{matchGroupId}")
-    public ResponseEntity<List<MatchParticipantDTO>> getParticipantsByMatchGroupId(
-            @PathVariable("matchGroupId") Long matchGroupId) {
-        return ResponseEntity.ok(
-                matchParticipantService.getParticipantsByMatchGroupId(matchGroupId)
-        );
-    }
-
-    // 특정 방의 참가자 목록 조회
+    // 확정된 참가자 조회 (ACCEPTED)
     @GetMapping("/accepted/{matchGroupId}")
-    public ResponseEntity<List<MatchParticipantDTO>> getAcceptedParticipants(
-            @PathVariable("matchGroupId") Long matchGroupId) {
+    public ResponseEntity<List<MatchParticipantDTO>> getAcceptedParticipants(@PathVariable Long matchGroupId) {
         return ResponseEntity.ok(
                 matchParticipantService.getAcceptedParticipants(matchGroupId)
         );
     }
 
-    // 나의 참가 그룹 및 신청, 과거 이력 조회
+    // 신청중인 참가자 조회 (PENDING)
+    @GetMapping("/pending/{matchGroupId}")
+    public ResponseEntity<List<MatchParticipantDTO>> getPendingParticipants(@PathVariable Long matchGroupId) {
+        return ResponseEntity.ok(
+                matchParticipantService.getPendingParticipants(matchGroupId)
+        );
+    }
+
+    // 나의 이력 조회
     @PostMapping("/my")
     public ResponseEntity<List<MatchParticipantDTO>> getMyGroups(@RequestBody MatchParticipantDTO request) {
         return ResponseEntity.ok(matchParticipantService.getMyGroups(request));
     }
 
+    // 확정된 인원 수 조회
+    @GetMapping("/accepted/count/{matchGroupId}")
+    public ResponseEntity<Integer> getAcceptedCount(@PathVariable Long matchGroupId) {
+        return ResponseEntity.ok(matchParticipantService.countAcceptedParticipants(matchGroupId));
+    }
 
+    // 그룹 나가기 (방장: 그룹 삭제)
+    @PostMapping("/leave/accepted")
+    public ResponseEntity<String> leaveAcceptedGroup(@RequestBody Map<String, Long> body) {
+        Long matchGroupId = body.get("matchGroupId");
+        Long userId = body.get("userId");
+        matchParticipantService.leaveAcceptedGroup(matchGroupId, userId);
+        return ResponseEntity.ok("그룹에서 나갔습니다.");
+    }
 
-
-
+    // 참가 가능 여부 확인
+    @GetMapping("/check/{matchGroupId}/{userId}")
+    public ResponseEntity<Boolean> canUserJoin(
+            @PathVariable Long matchGroupId,
+            @PathVariable Long userId
+    ) {
+        boolean allowed = matchParticipantService.canUserJoinGroup(matchGroupId, userId);
+        return ResponseEntity.ok(allowed);
+    }
 }

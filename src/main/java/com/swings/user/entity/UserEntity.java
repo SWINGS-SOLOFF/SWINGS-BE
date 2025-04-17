@@ -104,7 +104,7 @@ public class UserEntity {
 
 
 
-    // ✅ `createdAt`이 NULL이면 자동 설정 (JPA에서 NULL 방지)
+    // `createdAt`이 NULL이면 자동 설정 (JPA에서 NULL 방지)
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
@@ -114,7 +114,7 @@ public class UserEntity {
 
 
 
-    // 🔹 Enum 변환 메서드 추가
+    // Enum 변환 메서드 추가
     public enum GolfSkill {
         beginner, intermediate, advanced;
 
@@ -174,7 +174,7 @@ public class UserEntity {
         }
     }
 
-    // 🎯 한국식 나이 계산 메서드
+    // 한국식 나이 계산 메서드
     public int getKoreanAge() {
         int currentYear = LocalDate.now().getYear();
         int birthYear = this.birthDate.getYear();
