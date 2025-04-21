@@ -13,6 +13,5 @@ public interface FeedRepository extends JpaRepository<FeedEntity, Long> {
     int countByUser_UserId(Long userId);
     List<FeedEntity> findByUserUserIdOrderByCreatedAtDesc(Long userId);
     List<FeedEntity> findByUser_UserId(Long userId);
-    Page<FeedEntity> findByUser_UserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
     Page<FeedEntity> findByUser_UserIdIn(List<Long> userIds, Pageable pageable);
 }

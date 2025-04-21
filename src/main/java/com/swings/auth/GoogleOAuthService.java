@@ -18,9 +18,7 @@ public class GoogleOAuthService {
     private static final String USERINFO_URL = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    /**
-     * ✅ access_token을 통해 Google 유저 정보 조회
-     */
+
     public Map<String, Object> getUserInfo(String accessToken) {
         try {
             URL url = new URL(USERINFO_URL + accessToken);

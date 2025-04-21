@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String username = jwtTokenProvider.extractUsername(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            // ✅ 이메일 인증 여부 확인
+            // 이메일 인증 여부 확인
             if (userDetails instanceof CustomUserDetails customUserDetails) {
                 if (!customUserDetails.isVerified()) {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

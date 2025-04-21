@@ -23,27 +23,18 @@ public class AuthController {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
-    /**
-     * ✅ 일반 로그인 엔드포인트
-     * username + password를 통해 JWT 토큰 반환
-     */
+
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@RequestBody LoginRequestDTO request) {
         String token = authService.login(request.getUsername(), request.getPassword());
         return ResponseEntity.ok(new TokenResponse(token));
     }
 
-    /**
-     * ✅ Google OAuth 로그인 엔드포인트
-     * - 프론트에서 받은 accessToken으로 유저 정보 조회
-     * - DB에 사용자 존재 시: JWT 토큰 발급
-     * - 사용자 미존재 시: 회원가입 안내 및 기본정보 반환
-     */
     @PostMapping("/oauth/google")
     public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> request) {
         String accessToken = request.get("accessToken");
 
-        // ✅ accessToken으로 유저 정보 조회
+        // accessToken으로 유저 정보 조회
         Map<String, Object> userInfo = googleOAuthService.getUserInfo(accessToken);
         if (userInfo == null || !userInfo.containsKey("email")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Access Token");
