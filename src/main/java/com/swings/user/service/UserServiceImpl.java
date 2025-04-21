@@ -62,7 +62,7 @@ public class UserServiceImpl implements UserService {
 
         UserEntity savedUser = userRepository.save(user);
         emailService.sendEmailVerification(savedUser);
-        System.out.println("[✅ 이메일 인증 메일 전송됨]: " + user.getEmail());
+        System.out.println("[이메일 인증 메일 전송됨]: " + user.getEmail());
 
         return savedUser;
     }
@@ -112,7 +112,7 @@ public class UserServiceImpl implements UserService {
         dto.setRole(user.getRole() != null ? user.getRole().name() : "player");
         dto.setGender(user.getGender() != null ? user.getGender().name() : "male");
         dto.setActivityRegion(user.getActivityRegion() != null ? user.getActivityRegion().name() : "SEOUL");
-        dto.setIsVerified(user.isVerified()); // ✅ 추가
+        dto.setIsVerified(user.isVerified()); // 추가
         return dto;
     }
 
@@ -153,7 +153,7 @@ public class UserServiceImpl implements UserService {
         if (dto.getGender() != null) user.setGender(UserEntity.Gender.fromString(dto.getGender()));
         if (dto.getActivityRegion() != null) user.setActivityRegion(UserEntity.ActivityRegion.fromString(dto.getActivityRegion()));
 
-        // ✅ 인증 상태 업데이트
+        // 인증 상태 업데이트
         if (dto.getIsVerified() != null) {
             user.setVerified(dto.getIsVerified());
         }
@@ -228,7 +228,7 @@ public class UserServiceImpl implements UserService {
                     try {
                         return convertToDto(user);
                     } catch (Exception e) {
-                        System.out.println("❌ DTO 변환 실패: userId=" + user.getUserId() + " → " + e.getMessage());
+                        System.out.println("DTO 변환 실패: userId=" + user.getUserId() + " → " + e.getMessage());
                         return null;
                     }
                 })
@@ -252,18 +252,18 @@ public class UserServiceImpl implements UserService {
     //비밀번호 리셋
     @Override
     public void resetPassword(String username, String email) {
-        // ✅ username + email 둘 다 일치하는 사용자 찾기
+        // username + email 둘 다 일치하는 사용자 찾기
         UserEntity user = userRepository.findByUsernameAndEmail(username, email)
                 .orElseThrow(() -> new IllegalArgumentException("아이디 또는 이메일이 일치하지 않습니다."));
 
-        // ✅ 임시 비밀번호 생성 (8자리)
+        // 임시 비밀번호 생성 (8자리)
         String tempPassword = UUID.randomUUID().toString().substring(0, 8);
 
-        // ✅ 비밀번호 암호화 후 저장
+        // 비밀번호 암호화 후 저장
         user.setPassword(passwordEncoder.encode(tempPassword));
         userRepository.save(user);
 
-        // ✅ 이메일 전송
+        // 이메일 전송
         emailService.sendTemporaryPassword(user, tempPassword);
     }
 

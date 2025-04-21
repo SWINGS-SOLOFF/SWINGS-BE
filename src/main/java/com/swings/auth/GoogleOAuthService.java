@@ -29,7 +29,7 @@ public class GoogleOAuthService {
 
             int responseCode = conn.getResponseCode();
             if (responseCode != 200) {
-                log.error("❌ [GoogleOAuthService] 유저 정보 요청 실패 - 응답 코드: {}", responseCode);
+                log.error("[GoogleOAuthService] 유저 정보 요청 실패 - 응답 코드: {}", responseCode);
                 return null;
             }
 
@@ -40,11 +40,11 @@ public class GoogleOAuthService {
             userInfo.put("email", response.get("email").asText());
             userInfo.put("name", response.get("name").asText());
 
-            log.info("✅ [GoogleOAuthService] 사용자 정보 조회 성공: {}", userInfo);
+            log.info("[GoogleOAuthService] 사용자 정보 조회 성공: {}", userInfo);
             return userInfo;
 
         } catch (Exception e) {
-            log.error("❌ [GoogleOAuthService] access token으로 사용자 정보 조회 실패", e);
+            log.error("[GoogleOAuthService] access token으로 사용자 정보 조회 실패", e);
             return null;
         }
     }

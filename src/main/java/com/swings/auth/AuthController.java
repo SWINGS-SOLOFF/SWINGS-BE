@@ -23,13 +23,14 @@ public class AuthController {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
-
+    //로그인 API
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@RequestBody LoginRequestDTO request) {
         String token = authService.login(request.getUsername(), request.getPassword());
         return ResponseEntity.ok(new TokenResponse(token));
     }
 
+    //구글 로그인 API
     @PostMapping("/oauth/google")
     public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> request) {
         String accessToken = request.get("accessToken");

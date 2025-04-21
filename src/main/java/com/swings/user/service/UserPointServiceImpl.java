@@ -58,7 +58,7 @@ public class UserPointServiceImpl implements UserPointService {
         UserEntity user = getUser(username);
 
         if (user.getPointBalance() < amount) {
-            // ✅ 400 에러로 명확히 떨어지게 수정
+            // 400 에러로 명확히 떨어지게 수정
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "포인트가 부족합니다.");
         }
 

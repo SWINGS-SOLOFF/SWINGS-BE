@@ -48,13 +48,13 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    // 🔄 특정 ID의 사용자 정보 조회 (원래는 UserEntity 반환 → 선택적으로 DTO로 변경 가능)
+    // 특정 ID의 사용자 정보 조회 (원래는 UserEntity 반환 → 선택적으로 DTO로 변경 가능)
     @GetMapping("/{username}")
     public ResponseEntity<UserEntity> getUserByUsername(@PathVariable String username) {
         return ResponseEntity.ok(userService.getUserByUsername(username));
     }
 
-    // ✅ 현재 로그인한 사용자 정보 조회 (Lazy 문제 방지용 DTO 반환)
+    // 현재 로그인한 사용자 정보 조회 (Lazy 문제 방지용 DTO 반환)
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getCurrentUser() {
         return ResponseEntity.ok(userService.getCurrentUserDto());
@@ -124,7 +124,7 @@ public class UserController {
             @RequestParam int amount,
             @RequestParam(defaultValue = "포인트 충전") String description) {
 
-        String username = userService.getCurrentUser().getUsername(); // 🔹 로그인된 사용자에서 추출
+        String username = userService.getCurrentUser().getUsername(); // 로그인된 사용자에서 추출
         userPointService.chargePoint(username, amount, description);
 
         return ResponseEntity.ok("포인트 충전 완료");
