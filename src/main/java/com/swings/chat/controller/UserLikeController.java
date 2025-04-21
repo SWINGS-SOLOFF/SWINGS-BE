@@ -22,7 +22,7 @@ public class UserLikeController {
     private final UserLikeService userLikeService;
     private final UserPointService userPointService; // 💰 포인트 차감 서비스
 
-    // ✅ 좋아요 요청 (무료 3회 + 이후 유료)
+    //  좋아요 요청 (무료 3회 + 이후 유료)
     @PostMapping("/{fromUserId}/{toUserId}")
     public ResponseEntity<String> sendLike(
             @PathVariable String fromUserId,
@@ -48,14 +48,14 @@ public class UserLikeController {
     }
 
 
-    // ✅ 매칭 여부 확인
+    //  매칭 여부 확인
     @GetMapping("/match/{fromUserId}/{toUserId}")
     public ResponseEntity<Boolean> checkMatch(@PathVariable String fromUserId, @PathVariable String toUserId) {
         boolean isMatched = userLikeService.isMatched(fromUserId, toUserId);
         return ResponseEntity.ok(isMatched);
     }
 
-    // ✅ 보낸 좋아요
+    //  보낸 좋아요
     @GetMapping("/sent")
     public ResponseEntity<List<SentLikeDTO>> getMySentLikes() {
         String currentUsername = "user001"; // FIXME: 로그인 구현 시 수정
@@ -63,12 +63,12 @@ public class UserLikeController {
         return ResponseEntity.ok(result);
     }
 
-    // ✅ 받은 + 보낸 좋아요 통합 리스트
+    //  받은 + 보낸 좋아요 통합 리스트
     @GetMapping("/all/{userId}")
     public ResponseEntity<Map<String, List<SentLikeDTO>>> getAllLikes(@PathVariable String userId) {
         return ResponseEntity.ok(userLikeService.getSentAndReceivedLikes(userId));
     }
-    // ✅ 남은 좋아요 수 조회 API
+    //  남은 좋아요 수 조회 API
     @GetMapping("/count/{username}")
     public ResponseEntity<Integer> getDailyLikeCount(@PathVariable String username) {
         LocalDateTime todayStart = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT);

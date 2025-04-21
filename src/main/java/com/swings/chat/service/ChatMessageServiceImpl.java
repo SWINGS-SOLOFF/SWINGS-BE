@@ -22,13 +22,13 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final FCMService fcmService;
     private final UserRepository userRepository;
 
-    // ✅ 특정 채팅방의 모든 메시지 조회
+    //  특정 채팅방의 모든 메시지 조회
     @Override
     public List<ChatMessageEntity> getMessagesByRoomId(Long roomId) {
         return chatMessageRepository.findByChatRoom_RoomIdOrderBySentAtAsc(roomId);
     }
 
-    // ✅ 내가 아닌 메시지를 읽음 처리
+    //  내가 아닌 메시지를 읽음 처리
     @Override
     public void markMessagesAsRead(Long roomId, String username) {
         List<ChatMessageEntity> unreadMessages = chatMessageRepository.findByChatRoom_RoomIdOrderBySentAtAsc(roomId)
@@ -40,7 +40,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         chatMessageRepository.saveAll(unreadMessages);
     }
 
-    // ✅ 기본 저장 로직 (FCM 포함, 내부 재사용 가능)
+    //  기본 저장 로직 (FCM 포함, 내부 재사용 가능)
     @Override
     public ChatMessageEntity saveMessage(Long roomId, String sender, String content) {
         ChatRoomEntity chatRoom = chatRoomRepository.findById(roomId)
@@ -65,7 +65,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             String preview = content.length() > 20 ? content.substring(0, 20) + "..." : content;
             fcmService.sendPush(
                     receiver.getPushToken(),
-                    "💬 새 메시지",
+                    " 새 메시지",
                     sender + ": " + preview
             );
         }
@@ -73,7 +73,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         return savedMessage;
     }
 
-    // ✅ WebSocket 전용: 저장 + senderName 포함된 DTO 반환
+    //  WebSocket 전용: 저장 + senderName 포함된 DTO 반환
     @Override
     public ChatMessageDTO saveAndReturnDTO(Long roomId, String sender, String content) {
         ChatMessageEntity saved = saveMessage(roomId, sender, content);
@@ -90,7 +90,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .build();
     }
 
-    // ✅ 전체 메시지를 DTO 리스트로 변환해서 반환
+    //  전체 메시지를 DTO 리스트로 변환해서 반환
     @Override
     public List<ChatMessageDTO> getMessageDTOsByRoomId(Long roomId) {
         List<ChatMessageEntity> messages = chatMessageRepository.findByChatRoom_RoomIdOrderBySentAtAsc(roomId);

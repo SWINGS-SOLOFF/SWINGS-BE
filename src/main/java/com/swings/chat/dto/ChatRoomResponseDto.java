@@ -18,7 +18,7 @@ public class ChatRoomResponseDto {
     private LocalDateTime lastMessageTime;
     private Long unreadCount;
 
-    // ✅ 프론트에서 사용할 상대방 정보
+    //  프론트에서 사용할 상대방 정보
     private String targetName;
     private String targetUsername;
     private String targetImg;

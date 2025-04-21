@@ -23,7 +23,7 @@ public class ChatRoomEntity {
 
     private LocalDateTime createdAt; // 생성 시간
 
-    // ✅ 새롭게 추가하는 생성자 (user1, user2만 받음)
+    //  새롭게 추가하는 생성자 (user1, user2만 받음)
     public ChatRoomEntity(String user1, String user2) {
         this.user1 = user1;
         this.user2 = user2;

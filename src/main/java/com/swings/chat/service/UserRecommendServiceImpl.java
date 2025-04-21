@@ -34,9 +34,9 @@ public class UserRecommendServiceImpl implements UserRecommendService {
         excludedUsernames.addAll(chatUsernames);
         excludedUsernames.add(username);
 
-        // ✅ 로그 출력
-        System.out.println("🔥 로그인 유저: " + username);
-        System.out.println("🔥 제외 리스트: " + excludedUsernames);
+        //  로그 출력
+        System.out.println(" 로그인 유저: " + username);
+        System.out.println(" 제외 리스트: " + excludedUsernames);
 
         Optional<UserEntity> recommendedUser;
 
@@ -60,7 +60,7 @@ public class UserRecommendServiceImpl implements UserRecommendService {
                 user.getUserImg(),
                 user.getIntroduce(),
                 user.getActivityRegion() != null ? user.getActivityRegion().name() : "UNKNOWN",
-                user.getUserImg() // ✅ 이게 targetUserImg로 들어감
+                user.getUserImg() //  이게 targetUserImg로 들어감
         )).orElseThrow(() -> new RuntimeException("추천할 사용자가 없습니다."));
 
     }

@@ -28,7 +28,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
         return rooms.stream()
                 .map(room -> {
-                    // ✅ 대상 유저 정보 가져오기
+                    //  대상 유저 정보 가져오기
                     String targetUsername = room.getUser1().equals(username) ? room.getUser2() : room.getUser1();
                     UserEntity targetUser = userRepository.findByUsername(targetUsername).orElse(null);
 
@@ -44,7 +44,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                             .lastMessage(lastMessage != null ? lastMessage.getContent() : null)
                             .lastMessageTime(lastMessage != null ? lastMessage.getSentAt() : null)
                             .unreadCount(unreadCount)
-                            // ✅ 대상 유저 정보 추가
+                            //  대상 유저 정보 추가
                             .targetName(targetUser != null ? targetUser.getName() : "알 수 없음")
                             .targetUsername(targetUsername)
                             .targetImg(targetUser != null ? targetUser.getUserImg() : null)
