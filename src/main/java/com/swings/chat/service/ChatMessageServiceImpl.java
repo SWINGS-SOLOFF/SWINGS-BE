@@ -54,7 +54,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         ChatMessageEntity savedMessage = chatMessageRepository.save(message);
 
-        // 📲 푸시알림 전송
+        // 푸시알림 전송
         String receiverUsername = chatRoom.getUser1().equals(sender)
                 ? chatRoom.getUser2()
                 : chatRoom.getUser1();
