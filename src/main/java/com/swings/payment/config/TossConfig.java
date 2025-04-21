@@ -24,14 +24,14 @@ public class TossConfig {
     @PostConstruct
     public void loadSecretKey() {
         try {
-            // ✅ Resource에서 파일 경로를 읽어 문자열로 변환
+            // Resource에서 파일 경로를 읽어 문자열로 변환
             this.secretKey = Files.readString(secretKeyFile.getFile().toPath()).trim();
 
-            System.out.println("✅ Toss Secret Key Loaded Successfully");
+            System.out.println("Toss Secret Key Loaded Successfully");
             System.out.println("▶ Loaded Secret Key: " + secretKey);
             System.out.println("▶ Key Length: " + secretKey.length());
         } catch (Exception e) {
-            throw new RuntimeException("❌ toss-keys.txt 파일을 읽을 수 없습니다.", e);
+            throw new RuntimeException("toss-keys.txt 파일을 읽을 수 없습니다.", e);
         }
     }
 

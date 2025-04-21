@@ -25,20 +25,20 @@ public class EmailController {
         Optional<UserVerifyEntity> optionalToken = tokenRepository.findByToken(token);
 
         if (optionalToken.isEmpty()) {
-            return ResponseEntity.badRequest().body(renderHtml("유효하지 않은 인증 링크입니다 ❌"));
+            return ResponseEntity.badRequest().body(renderHtml("유효하지 않은 인증 링크입니다"));
         }
 
         UserVerifyEntity verification = optionalToken.get();
 
         if (verification.isExpired()) {
-            return ResponseEntity.badRequest().body(renderHtml("⏰ 인증 링크가 만료되었습니다.<br>다시 회원가입하거나 관리자에게 문의해주세요."));
+            return ResponseEntity.badRequest().body(renderHtml("인증 링크가 만료되었습니다.<br>다시 회원가입하거나 관리자에게 문의해주세요."));
         }
 
         if (verification.isUsed()) {
-            return ResponseEntity.badRequest().body(renderHtml("⚠️ 이미 인증이 완료된 링크입니다."));
+            return ResponseEntity.badRequest().body(renderHtml("이미 인증이 완료된 링크입니다."));
         }
 
-        // ✅ 인증 처리
+        // 인증 처리
         UserEntity user = verification.getUser();
         user.setVerified(true);
         userRepository.save(user);
@@ -46,7 +46,7 @@ public class EmailController {
         verification.setUsed(true);
         tokenRepository.save(verification);
 
-        return ResponseEntity.ok(renderHtml("✅ 이메일 인증이 완료되었습니다.<br>이제 로그인할 수 있습니다."));
+        return ResponseEntity.ok(renderHtml("이메일 인증이 완료되었습니다.<br>이제 로그인할 수 있습니다."));
     }
 
     private String renderHtml(String message) {

@@ -77,7 +77,7 @@ public class EmailServiceImpl implements EmailService {
                 </html>
                 """.formatted(user.getUsername(), link);
 
-            helper.setText(html, true); // ✅ HTML 메일
+            helper.setText(html, true); // HTML 메일
             mailSender.send(mimeMessage);
 
         } catch (MessagingException e) {
