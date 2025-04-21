@@ -22,20 +22,20 @@ public class UserDTO {
     private String email; // 이메일
     private String job;
 
-    private String golfSkill; // 🔹 Enum 대신 String 사용
+    private String golfSkill; //
     private String mbti;
     private String hobbies;
     private String religion;
 
-    private String smoking; // 🔹 Enum 대신 String 사용
-    private String drinking; // 🔹 Enum 대신 String 사용
+    private String smoking; //
+    private String drinking; //
     private String introduce;
 
-    private String userImg; // 🔹 Base64 이미지 저장
+    private String userImg; //
 
-    private String role; // 🔹 Enum 대신 String 사용
-    private String gender; // 🔹 Enum 대신 String 사용
+    private String role; //
+    private String gender; //
     private String activityRegion;
 
-    private Boolean isVerified; // ✅ 이메일 인증 상태 추가
+    private Boolean isVerified; //
 }

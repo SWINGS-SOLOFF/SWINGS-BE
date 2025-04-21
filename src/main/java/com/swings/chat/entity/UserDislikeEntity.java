@@ -27,7 +27,7 @@ public class UserDislikeEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt; // 싫어요 누른 시간
 
-    // ✅ 해결: 자동으로 현재 시간 저장
+    //  해결: 자동으로 현재 시간 저장
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

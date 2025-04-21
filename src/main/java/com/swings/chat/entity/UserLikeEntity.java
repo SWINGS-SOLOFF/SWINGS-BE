@@ -27,7 +27,7 @@ public class UserLikeEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // ✅ 예약어 문제 방지 → 컬럼명에 백틱(`) 적용
+    //  예약어 문제 방지 → 컬럼명에 백틱(`) 적용
     @Column(name = "`match`", nullable = false)
     private boolean match;
 

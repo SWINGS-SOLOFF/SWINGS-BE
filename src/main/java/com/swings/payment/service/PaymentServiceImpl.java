@@ -24,7 +24,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final UserPointRepository userPointRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // 💰 코인 단위 환산 기준
+    // 코인 단위 환산 기준
     private static final int COIN_UNIT_PRICE = 1000;
 
     @Override
@@ -37,7 +37,7 @@ public class PaymentServiceImpl implements PaymentService {
                     .bodyToMono(String.class)
                     .block();
 
-            System.out.println("✅ Toss API 응답 수신: " + response);
+            System.out.println("Toss API 응답 수신: " + response);
 
             JsonNode root = objectMapper.readTree(response);
             long userId = requestDTO.getCustomerId();
@@ -55,7 +55,7 @@ public class PaymentServiceImpl implements PaymentService {
             user.setPointBalance(user.getPointBalance() + coin);
             userRepository.save(user);
 
-            // ✅ createdAt 설정 포함
+            // createdAt 설정 포함
             UserPointEntity log = UserPointEntity.builder()
                     .user(user)
                     .amount(coin)
@@ -68,7 +68,7 @@ public class PaymentServiceImpl implements PaymentService {
             return response;
 
         } catch (WebClientResponseException e) {
-            System.err.println("❌ Toss API 응답 에러: " + e.getResponseBodyAsString());
+            System.err.println("Toss API 응답 에러: " + e.getResponseBodyAsString());
             throw e;
         } catch (Exception e) {
             e.printStackTrace();

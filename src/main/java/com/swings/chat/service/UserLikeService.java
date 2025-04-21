@@ -26,6 +26,6 @@ public interface UserLikeService {
 
     int countTodayLikes(String username, LocalDateTime since);
 
-    // 🔥 보낸 + 받은 좋아요 DTO로 통합 반환
+    //  보낸 + 받은 좋아요 DTO로 통합 반환
     Map<String, List<SentLikeDTO>> getSentAndReceivedLikes(String userId);
 }
