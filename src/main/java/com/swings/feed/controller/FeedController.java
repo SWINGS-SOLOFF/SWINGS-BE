@@ -1,6 +1,7 @@
 package com.swings.feed.controller;
 
 import com.swings.feed.dto.CommentDTO;
+import com.swings.feed.mapper.CommentMapper;
 import com.swings.feed.dto.FeedDTO;
 import com.swings.feed.entity.CommentEntity;
 import com.swings.feed.entity.FeedEntity;
@@ -222,7 +223,7 @@ public class FeedController {
                                                  @RequestParam Long userId,
                                                  @RequestParam String content) {
         CommentEntity comment = commentService.addComment(feedId, userId, content);
-        return ResponseEntity.ok(convertToDTO(comment));
+        return ResponseEntity.ok(CommentMapper.toDTO(comment));
     }
     
     // 댓글 삭제
@@ -240,14 +241,16 @@ public class FeedController {
             @RequestParam String content) {
 
         CommentEntity updated = commentService.updateComment(commentId, content);
-        return ResponseEntity.ok(convertToDTO(updated));
+        return ResponseEntity.ok(CommentMapper.toDTO(updated));
     }
     
     // 댓글 조회
     @GetMapping("/{feedId}/comments")
     public ResponseEntity<List<CommentDTO>> getCommentsByFeedId(@PathVariable Long feedId) {
         List<CommentEntity> comments = commentService.getCommentsByFeedId(feedId);
-        List<CommentDTO> commentDTOs = comments.stream().map(this::convertToDTO).collect(Collectors.toList());
+        List<CommentDTO> commentDTOs = comments.stream()
+                .map(CommentMapper::toDTO)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(commentDTOs);
     }
     
@@ -257,19 +260,6 @@ public class FeedController {
         return ResponseEntity.ok(feedService.getLikedUsers(feedId));
     }
     
-    // 댓글 Entity -> DTO 변환
-    private CommentDTO convertToDTO(CommentEntity comment) {
-        return CommentDTO.builder()
-                .commentId(comment.getCommentId())
-                .userId(comment.getUser() != null ? comment.getUser().getUserId() : null)
-                .username(comment.getUser() != null ? comment.getUser().getUsername() : "Unknown User")
-                .content(comment.getContent())
-                .createdAt(comment.getCreatedAt())
-                .userProfilePic(
-                        comment.getUser() != null ? comment.getUser().getUserImg() : null
-                )
-                .build();
-    }
-    
+
     
 }
