@@ -23,7 +23,7 @@
 
 | 이름 | 역할 | GitHub |
 |------|------|--------|
-| 이우찬 | 회원 인증 / 보안 / JWT | [@woochan-dev](https://github.com/woochan-dev) |
+| 이우찬 | 팀장 / 회원 인증 / 보안 / JWT | [@Gromit-IT](https://github.com/Gromit-IT) |
 | 이건우 | 매칭 기능 / 실시간 채팅 | [@gunwoo-dev](https://github.com/gunwoo-dev) |
 | 황유성 | 그룹 기능 / 실시간 및 푸시 알림 | [@YusungH](https://github.com/YusungH) |
 | 김정대 | 피드 기능 / 소셜 기능 | [@jungdae-dev](https://github.com/jungdae-dev) |
