@@ -1,4 +1,49 @@
-# SWINGS-BE
-" SHINSEGAE I&C KDT 7기 FinalProject " BACKEND PART
-<br>
-" AI플랫폼을 활용한 (리테일) 서비스 "
+# SWINGS - 골프 기반 소개팅 플랫폼
+
+<p align="center">
+  <img src="./assets/swings-banner.png" width="300" alt="swings-logo" />
+</p>
+
+<p align="center">
+  <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://github.com/swings-project/swings&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visit&edge_flat=false"/></a>
+</p>
+
+---
+
+## 프로젝트 정보
+
+- **진행 기간**: 2025년 2월 ~ 4월 (총 2개월)
+- **진행 기관**: 신세계아이앤씨 K-Digital Training
+- **개발 목적**: 소셜 기반 데이팅 서비스의 확장성과 MZ 세대의 골프 관심을 연결한 서비스 기획 및 구현
+- **진행 방식**: 팀 프로젝트 (4인 협업)
+
+---
+
+## 배포 주소 (배포 중)
+
+- **웹사이트**: https://swings.site  
+- **프론트엔드**: https://swings.site (Vite + React PWA 기반)  
+- **백엔드**: http://api.swings.site (Spring Boot + AWS Elastic Beanstalk)
+
+---
+
+## 팀 소개
+
+| 이름 | 역할 | GitHub |
+|------|------|--------|
+| 이우찬 | 회원 인증 / 보안 / JWT | [@woochan-dev](https://github.com/woochan-dev) |
+| 이건우 | 매칭 기능 / 실시간 채팅 | [@gunwoo-dev](https://github.com/gunwoo-dev) |
+| 황유성 | 그룹 기능 / 실시간 및 푸시 알림 | [@YusungH](https://github.com/YusungH) |
+| 김정대 | 피드 기능 / 소셜 기능 | [@jungdae-dev](https://github.com/jungdae-dev) |
+
+---
+
+## 프로젝트 소개
+
+**SWINGS**는 ‘골프 조인’과 ‘소개팅’의 장점을 결합한 새로운 형태의 소셜 매칭 플랫폼입니다.  
+스크린/필드 라운딩 그룹을 생성하거나 참가할 수 있으며, 실시간 채팅과 푸시 알림을 통해 자연스러운 만남을 유도합니다.  
+PWA를 기반으로 모바일 환경에서도 앱처럼 사용할 수 있어 접근성과 실용성을 높였습니다.
+
+- MZ세대의 골프 이탈과 데이팅 트렌드에 착안
+- 관심사 기반 만남의 자연스러운 연결 추구
+- 참여형 피드 기능과 사용자 프로필 관리까지 지원
