@@ -13,9 +13,9 @@
 
 ## 배포 주소 (배포 구현중)
 
-- **웹사이트**: https://swings.site  
-- **프론트엔드**: https://swings.site (Vite + React PWA 기반)  
-- **백엔드**: http://api.swings.site (Spring Boot + AWS Elastic Beanstalk)
+- **웹사이트**: https://www.loveswings.click/swings
+- **프론트엔드** (Vite + React PWA 기반)  
+- **백엔드** (Spring Boot + AWS Elastic Beanstalk)
 
 ---
 
