@@ -4,14 +4,14 @@
 
 ## 프로젝트 정보
 
-- **진행 기간**: 2025년 2월 ~ 4월 (총 2개월)
+- **진행 기간**: 2025년 3월 ~ 4월 (총 2개월)
 - **진행 기관**: 신세계아이앤씨 K-Digital Training
 - **개발 목적**: 소셜 기반 데이팅 서비스의 확장성과 MZ 세대의 골프 관심을 연결한 서비스 기획 및 구현
 - **진행 방식**: 팀 프로젝트 (4인 협업)
 
 ---
 
-## 배포 주소 (배포 중)
+## 배포 주소 (배포 구현중)
 
 - **웹사이트**: https://swings.site  
 - **프론트엔드**: https://swings.site (Vite + React PWA 기반)  
@@ -23,7 +23,7 @@
 
 | 이름 | 역할 | GitHub |
 |------|------|--------|
-| 이우찬 | 팀장 / 회원 인증 / 보안 / JWT | [@Gromit-IT](https://github.com/Gromit-IT) |
+| 이우찬 | 팀장 / 회원 관리 / 보안 / 결제시스템 | [@Gromit-IT](https://github.com/Gromit-IT) |
 | 이건우 | 매칭 기능 / 실시간 채팅 | [@gunwoo-dev](https://github.com/gunwoo-dev) |
 | 황유성 | 그룹 기능 / 실시간 및 푸시 알림 | [@YusungH](https://github.com/YusungH) |
 | 김정대 | 피드 기능 / 소셜 기능 | [@jungdae-dev](https://github.com/jungdae-dev) |
