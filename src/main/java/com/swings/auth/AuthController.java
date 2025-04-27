@@ -1,8 +1,11 @@
 package com.swings.auth;
 
 import com.swings.security.JwtTokenProvider;
+import com.swings.security.RefreshTokenEntity;
+import com.swings.security.RefreshTokenRepository;
 import com.swings.user.entity.UserEntity;
 import com.swings.user.repository.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,13 +25,36 @@ public class AuthController {
     private final GoogleOAuthService googleOAuthService;
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     //로그인 API
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequestDTO request) {
-        String token = authService.login(request.getUsername(), request.getPassword());
-        return ResponseEntity.ok(new TokenResponse(token));
+    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequestDTO request, HttpServletResponse response) {
+        String accessToken = authService.login(request.getUsername(), request.getPassword(), response);
+        return ResponseEntity.ok(new TokenResponse(accessToken));  // Access Token만 반환
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenResponse> refreshAccessToken(@CookieValue(value = "refreshToken", required = false) String refreshToken) {
+        if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String username = jwtTokenProvider.extractUsername(refreshToken);
+        UserEntity user = userRepository.findByUsername(username).orElseThrow();
+
+        // DB에 저장된 Refresh Token과 비교
+        RefreshTokenEntity tokenEntity = refreshTokenRepository.findByUser(user).orElseThrow();
+        if (!tokenEntity.getRefreshToken().equals(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // 새로운 Access Token 발급
+        String newAccessToken = jwtTokenProvider.generateToken(username, user.getRole());
+        return ResponseEntity.ok(new TokenResponse(newAccessToken));
+    }
+
+
 
     //구글 로그인 API
     @PostMapping("/oauth/google")
