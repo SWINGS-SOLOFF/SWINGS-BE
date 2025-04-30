@@ -21,35 +21,34 @@ import java.util.stream.Stream;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "users") // DB 테이블 이름과 매핑
+@Table(name = "users")
 public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId; // 자동 증가하는 기본 키
+    private Long userId;
 
     @Column(nullable = false, unique = true, length = 50)
-    private String username; // 사용자 아이디
+    private String username; // 로그인 시 사용될 사용자 아이디
 
     @Column(nullable = false, length = 255)
-    private String password; // 암호화된 비밀번호
+    private String password;
 
     @Column(nullable = false, length = 50)
-    private String name; // 이름
+    private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Gender gender; // 성별 (ENUM)
+    private Gender gender;
 
     @Column(nullable = false)
-    private LocalDate birthDate; // 생년월일
+    private LocalDate birthDate;
 
     @Column(nullable = false, length = 15)
-    private String phonenumber; // 전화번호
+    private String phonenumber;
 
     @Column(nullable = false, unique = true, length = 100)
-    private String email; // 이메일
-
+    private String email;
 
     @Column(nullable = false, length = 50)
     private String job; // 직업

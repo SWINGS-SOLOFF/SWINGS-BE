@@ -48,6 +48,7 @@ public class JwtTokenProvider {
         }
     }
 
+    //accessToken
     public String generateToken(String username, UserEntity.Role role) {
         return Jwts.builder()
                 .setSubject(username)
@@ -58,8 +59,9 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    //RefreshToken
     public String generateRefreshToken(String username) {
-        long refreshTokenExpiration = 7 * 24 * 60 * 60 * 1000L; // 7일
+        long refreshTokenExpiration = 7 * 24 * 60 * 60 * 1000L;
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
