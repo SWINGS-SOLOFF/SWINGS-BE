@@ -65,32 +65,32 @@ public class UserEntity {
     private String hobbies; // 취미
 
     @Column(nullable = false, length = 50)
-    private String religion; // 종교
+    private String religion;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private YesNo smoking; // 흡연 여부 (ENUM)
+    private YesNo smoking;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private YesNo drinking; // 음주 여부 (ENUM)
+    private YesNo drinking;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String introduce; // 자기소개
+    private String introduce;
 
     @Column(nullable = true, columnDefinition = "LONGTEXT")
     private String userImg;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role; // 사용자 역할 (ENUM)
+    private Role role; // 사용자 역할 ADMIN/PLAYER
 
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ActivityRegion activityRegion; // 활동 지역 (도/광역시 단위 ENUM)
+    private ActivityRegion activityRegion;
 
     //포인트 금액
     @Column(nullable = false)

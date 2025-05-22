@@ -35,7 +35,8 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<TokenResponse> refreshAccessToken(@CookieValue(value = "refreshToken", required = false) String refreshToken) {
+    public ResponseEntity<TokenResponse> refreshAccessToken(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken) {
         if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -43,13 +44,13 @@ public class AuthController {
         String username = jwtTokenProvider.extractUsername(refreshToken);
         UserEntity user = userRepository.findByUsername(username).orElseThrow();
 
-        // DB에 저장된 Refresh Token과 비교
+        // DB의 RefreshToken 비교
         RefreshTokenEntity tokenEntity = refreshTokenRepository.findByUser(user).orElseThrow();
         if (!tokenEntity.getRefreshToken().equals(refreshToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // 새로운 Access Token 발급
+        // new AccessToken 발급
         String newAccessToken = jwtTokenProvider.generateToken(username, user.getRole());
         return ResponseEntity.ok(new TokenResponse(newAccessToken));
     }
@@ -73,12 +74,12 @@ public class AuthController {
         Optional<UserEntity> userOpt = userRepository.findByEmail(email);
 
         if (userOpt.isPresent()) {
-            // 기존 회원 → JWT 토큰 발급
+            // 기존 회원 : JWT 토큰 발급
             UserEntity user = userOpt.get();
             String token = jwtTokenProvider.generateToken(user.getUsername(), user.getRole());
             return ResponseEntity.ok(new TokenResponse(token));
         } else {
-            // 신규 회원 → 회원가입 유도
+            // 신규 회원 : 회원가입 페이지 이동
             Map<String, Object> signupData = new HashMap<>();
             signupData.put("email", email);
             signupData.put("name", name);

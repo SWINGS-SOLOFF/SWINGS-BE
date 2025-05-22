@@ -46,7 +46,7 @@ public class AuthService {
                 )
         );
 
-        // Refresh Token → HttpOnly Cookie
+        // RefreshToken을 HttpOnly Cookie 저장
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(true)
