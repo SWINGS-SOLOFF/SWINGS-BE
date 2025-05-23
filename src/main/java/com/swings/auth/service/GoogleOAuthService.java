@@ -1,4 +1,4 @@
-package com.swings.auth;
+package com.swings.auth.service;
 
 import java.util.Map;
 

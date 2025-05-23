@@ -1,4 +1,4 @@
-package com.swings.auth;
+package com.swings.auth.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

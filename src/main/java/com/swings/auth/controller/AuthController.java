@@ -1,5 +1,9 @@
-package com.swings.auth;
+package com.swings.auth.controller;
 
+import com.swings.auth.service.AuthService;
+import com.swings.auth.service.GoogleOAuthService;
+import com.swings.auth.dto.LoginRequestDTO;
+import com.swings.auth.dto.TokenResponse;
 import com.swings.security.JwtTokenProvider;
 import com.swings.security.RefreshTokenEntity;
 import com.swings.security.RefreshTokenRepository;

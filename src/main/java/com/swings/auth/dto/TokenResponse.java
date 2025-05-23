@@ -1,4 +1,4 @@
-package com.swings.auth;
+package com.swings.auth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

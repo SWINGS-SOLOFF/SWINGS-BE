@@ -1,4 +1,4 @@
-package com.swings.auth;
+package com.swings.auth.dto;
 
 import lombok.Getter;
 import lombok.Setter;
